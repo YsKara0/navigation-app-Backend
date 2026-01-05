@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Test - Indoor Navigation</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: #eee; margin: 0; }
+        .container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+        .map-section { grid-column: 1; }
+        .control-section { grid-column: 2; }
+        h1 { color: #00d9ff; margin: 10px 0; }
+        h3 { margin: 10px 0 5px 0; color: #00d9ff; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .connected { background: #0f5132; }
+        .disconnected { background: #842029; }
+        .log { background: #2d2d44; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 11px; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+        button { background: #00d9ff; color: #000; border: none; padding: 8px 15px; margin: 3px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        button:hover { background: #00b8d9; }
+        button:disabled { background: #666; cursor: not-allowed; }
+        .section { margin: 10px 0; padding: 12px; background: #2d2d44; border-radius: 8px; }
+        label { display: block; margin: 5px 0; font-size: 13px; }
+        select, input { padding: 6px; margin: 3px 0; border-radius: 4px; border: 1px solid #444; background: #1a1a2e; color: #eee; width: 100%; box-sizing: border-box; }
+        
+        /* Harita stilleri */
+        .map-container { background: #fff; border-radius: 8px; overflow: hidden; position: relative; }
+        #mapSvg { width: 100%; height: auto; display: block; }
+        
+        /* Kullanıcı marker */
+        .user-marker { 
+            fill: #ff4444; 
+            stroke: #fff; 
+            stroke-width: 3;
+            filter: drop-shadow(0 0 8px rgba(255,68,68,0.8));
+        }
+        .user-marker-pulse {
+            fill: rgba(255,68,68,0.3);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { r: 12; opacity: 1; }
+            100% { r: 30; opacity: 0; }
+        }
+        
+        /* Rota çizgisi */
+        .route-line {
+            fill: none;
+            stroke: #00d9ff;
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 10, 5;
+            animation: dash 1s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -15; }
+        }
+        
+        /* Hedef marker */
+        .target-marker {
+            fill: #4CAF50;
+            stroke: #fff;
+            stroke-width: 2;
+        }
+        
+        /* Bilgi kutusu */
+        .info-box { 
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            background: rgba(0,0,0,0.8); 
+            padding: 10px; 
+            border-radius: 8px; 
+            font-size: 12px;
+            color: #fff;
+        }
+        .info-box .label { color: #888; }
+        .info-box .value { color: #00d9ff; font-weight: bold; }
+        
+        /* Mode butonları */
+        .mode-btn { font-size: 11px; padding: 6px 10px; }
+        .mode-btn.active { background: #4CAF50; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SOL: HARİTA -->
+        <div class="map-section">
+            <h1>🧭 Indoor Navigation - Canlı Harita</h1>
+            <div class="map-container">
+                <svg id="mapSvg" viewBox="0 0 1700 800" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Arka plan -->
+                    <rect width="1700" height="800" fill="#f5f5f5"/>
+                    
+                    <!-- Ana Koridor -->
+                    <rect x="230" y="170" width="1380" height="110" fill="#e8e8e8" stroke="#999" stroke-width="2"/>
+                    
+                    <!-- Sol Koridor -->
+                    <rect x="180" y="170" width="130" height="550" fill="#e8e8e8" stroke="#999" stroke-width="2"/>
+                    
+                    <!-- Kuzey Odaları (üst sıra) -->
+                    <rect x="230" y="60" width="130" height="110" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+                    <text x="295" y="120" text-anchor="middle" font-size="14" fill="#333">161</text>
+                    
+                    <rect x="360" y="60" width="130" height="110" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="425" y="120" text-anchor="middle" font-size="14" fill="#333">160</text>
+                    
+                    <rect x="490" y="60" width="130" height="110" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="555" y="120" text-anchor="middle" font-size="14" fill="#333">159</text>
+                    
+                    <rect x="620" y="60" width="130" height="110" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="685" y="120" text-anchor="middle" font-size="14" fill="#333">158</text>
+                    
+                    <rect x="750" y="60" width="130" height="110" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="815" y="120" text-anchor="middle" font-size="14" fill="#333">157</text>
+                    
+                    <rect x="880" y="60" width="80" height="110" fill="#ffebee" stroke="#f44336" stroke-width="2"/>
+                    <text x="920" y="120" text-anchor="middle" font-size="12" fill="#333">Merdiven</text>
+                    
+                    <rect x="960" y="60" width="130" height="110" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+                    <text x="1025" y="115" text-anchor="middle" font-size="12" fill="#333">156</text>
+                    <text x="1025" y="130" text-anchor="middle" font-size="9" fill="#666">Kimya Lab</text>
+                    
+                    <rect x="1090" y="60" width="150" height="110" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+                    <text x="1165" y="115" text-anchor="middle" font-size="12" fill="#333">155</text>
+                    <text x="1165" y="130" text-anchor="middle" font-size="9" fill="#666">Modelleme</text>
+                    
+                    <rect x="1240" y="60" width="80" height="110" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+                    <text x="1280" y="120" text-anchor="middle" font-size="12" fill="#333">WC</text>
+                    
+                    <rect x="1320" y="60" width="130" height="110" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+                    <text x="1385" y="115" text-anchor="middle" font-size="12" fill="#333">151</text>
+                    <text x="1385" y="130" text-anchor="middle" font-size="9" fill="#666">Maket</text>
+                    
+                    <rect x="1450" y="60" width="150" height="110" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+                    <text x="1525" y="115" text-anchor="middle" font-size="12" fill="#333">131</text>
+                    <text x="1525" y="130" text-anchor="middle" font-size="9" fill="#666">Elektronik</text>
+                    
+                    <!-- Güney Odaları (alt sıra) -->
+                    <rect x="310" y="280" width="130" height="110" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+                    <text x="375" y="335" text-anchor="middle" font-size="12" fill="#333">141</text>
+                    <text x="375" y="350" text-anchor="middle" font-size="9" fill="#666">USAM</text>
+                    
+                    <rect x="440" y="280" width="130" height="110" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="505" y="340" text-anchor="middle" font-size="14" fill="#333">142</text>
+                    
+                    <rect x="570" y="280" width="130" height="110" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="635" y="340" text-anchor="middle" font-size="14" fill="#333">143</text>
+                    
+                    <rect x="700" y="280" width="130" height="110" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="765" y="340" text-anchor="middle" font-size="14" fill="#333">144</text>
+                    
+                    <rect x="830" y="280" width="130" height="110" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+                    <text x="895" y="335" text-anchor="middle" font-size="12" fill="#333">145</text>
+                    <text x="895" y="350" text-anchor="middle" font-size="9" fill="#666">Müh.Ofis</text>
+                    
+                    <rect x="960" y="280" width="130" height="110" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+                    <text x="1025" y="335" text-anchor="middle" font-size="12" fill="#333">146</text>
+                    <text x="1025" y="350" text-anchor="middle" font-size="9" fill="#666">Fizik Lab</text>
+                    
+                    <rect x="1090" y="280" width="150" height="110" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+                    <text x="1165" y="335" text-anchor="middle" font-size="12" fill="#333">147</text>
+                    <text x="1165" y="350" text-anchor="middle" font-size="9" fill="#666">IoT Lab</text>
+                    
+                    <rect x="1240" y="280" width="130" height="110" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+                    <text x="1305" y="335" text-anchor="middle" font-size="12" fill="#333">148</text>
+                    <text x="1305" y="350" text-anchor="middle" font-size="9" fill="#666">Araş.Gör.</text>
+                    
+                    <rect x="1370" y="280" width="130" height="110" fill="#e1f5fe" stroke="#03a9f4" stroke-width="2"/>
+                    <text x="1435" y="335" text-anchor="middle" font-size="12" fill="#333">149</text>
+                    <text x="1435" y="350" text-anchor="middle" font-size="9" fill="#666">Öğr.Proje</text>
+                    
+                    <rect x="1500" y="280" width="110" height="110" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+                    <text x="1555" y="335" text-anchor="middle" font-size="12" fill="#333">150</text>
+                    <text x="1555" y="350" text-anchor="middle" font-size="9" fill="#666">Kalibr.</text>
+                    
+                    <!-- Sol Koridor Odaları -->
+                    <rect x="50" y="170" width="130" height="80" fill="#fffde7" stroke="#ffc107" stroke-width="2"/>
+                    <text x="115" y="215" text-anchor="middle" font-size="11" fill="#333">Yemekhane</text>
+                    
+                    <rect x="50" y="280" width="130" height="80" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+                    <text x="115" y="325" text-anchor="middle" font-size="12" fill="#333">WC Bay</text>
+                    
+                    <rect x="50" y="390" width="130" height="80" fill="#ffebee" stroke="#f44336" stroke-width="2"/>
+                    <text x="115" y="435" text-anchor="middle" font-size="11" fill="#333">Merdiven 2</text>
+                    
+                    <rect x="50" y="500" width="130" height="100" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="115" y="555" text-anchor="middle" font-size="14" fill="#333">139</text>
+                    
+                    <rect x="310" y="450" width="150" height="100" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+                    <text x="385" y="505" text-anchor="middle" font-size="14" fill="#333">120</text>
+                    
+                    <!-- Giriş -->
+                    <rect x="200" y="650" width="120" height="70" fill="#c8e6c9" stroke="#388e3c" stroke-width="3"/>
+                    <text x="260" y="690" text-anchor="middle" font-size="14" font-weight="bold" fill="#1b5e20">GİRİŞ</text>
+                    
+                    <!-- Beacon'lar (mavi daireler) -->
+                    <circle cx="1430" cy="255" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="1310" cy="255" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="1175" cy="255" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="1010" cy="255" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="870" cy="255" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="490" cy="255" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="360" cy="255" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="1160" cy="195" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="1000" cy="195" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="630" cy="195" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="370" cy="195" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="250" cy="191" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="198" cy="232" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="206" cy="539" r="8" fill="#2196f3" opacity="0.7"/>
+                    <circle cx="278" cy="498" r="8" fill="#2196f3" opacity="0.7"/>
+                    
+                    <!-- Rota çizgisi (dinamik) -->
+                    <path id="routePath" class="route-line" d=""/>
+                    
+                    <!-- Hedef marker -->
+                    <g id="targetMarker" style="display:none;">
+                        <circle r="15" class="target-marker"/>
+                        <text y="5" text-anchor="middle" font-size="12" fill="#fff">⭐</text>
+                    </g>
+                    
+                    <!-- Kullanıcı konumu (dinamik) -->
+                    <g id="userMarker" style="display:none;">
+                        <circle r="20" class="user-marker-pulse"/>
+                        <circle r="12" class="user-marker"/>
+                        <text y="4" text-anchor="middle" font-size="10" fill="#fff" font-weight="bold">📍</text>
+                    </g>
+                </svg>
+                
+                <!-- Bilgi kutusu -->
+                <div class="info-box">
+                    <div><span class="label">Konum:</span> <span class="value" id="infoLocation">-</span></div>
+                    <div><span class="label">Oda:</span> <span class="value" id="infoRoom">-</span></div>
+                    <div><span class="label">Mod:</span> <span class="value" id="infoMode">-</span></div>
+                    <div><span class="label">Güven:</span> <span class="value" id="infoConfidence">-</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SAĞ: KONTROLLER -->
+        <div class="control-section">
+            <div id="status" class="status disconnected">⭕ Bağlantı yok</div>
+            
+            <div class="section">
+                <h3>Bağlantı</h3>
+                <button id="connectBtn" onclick="connect()">🔌 Bağlan</button>
+                <button id="disconnectBtn" onclick="disconnect()" disabled>❌ Kapat</button>
+                <button onclick="sendPing()">📡 Ping</button>
+            </div>
+
+            <div class="section">
+                <h3>Konum Modu</h3>
+                <button class="mode-btn" id="modeProximity" onclick="setMode('PROXIMITY')">PROXIMITY</button>
+                <button class="mode-btn" id="modeTrilateration" onclick="setMode('TRILATERATION')">TRILATERATION</button>
+                <button class="mode-btn" id="modeHybrid" onclick="setMode('HYBRID')">HYBRID</button>
+            </div>
+
+            <div class="section">
+                <h3>Konum Simülasyonu</h3>
+                <label>Bulunduğun Beacon:</label>
+                <select id="beacon1">
+                    <option value="72:9C:87:72:92:08">Beacon 1 - Oda 149</option>
+                    <option value="AE:9A:87:72:92:08">Beacon 2 - Oda 148</option>
+                    <option value="7A:8E:87:72:92:08" selected>Beacon 3 - Oda 147 (IoT Lab)</option>
+                    <option value="CA:8F:87:72:92:08">Beacon 4 - Oda 146 (Fizik Lab)</option>
+                    <option value="96:9C:87:72:92:08">Beacon 5 - Oda 145</option>
+                    <option value="36:9B:87:72:92:08">Beacon 6 - Oda 142</option>
+                    <option value="86:9C:87:72:92:08">Beacon 7 - Oda 141</option>
+                    <option value="E6:8F:87:72:92:08">Beacon 8 - Oda 155 (Modelleme)</option>
+                    <option value="66:0A:84:72:92:08">Beacon 9 - Oda 156 (Kimya Lab)</option>
+                    <option value="1A:8F:87:72:92:08">Beacon 10 - Oda 158</option>
+                    <option value="CE:8F:87:72:92:08">Beacon 11 - Oda 160</option>
+                    <option value="0E:9B:87:72:92:08">Beacon 12 - Oda 161 (TTO)</option>
+                    <option value="D6:8D:87:72:92:08">Beacon 13 - Yemekhane</option>
+                    <option value="06:88:87:72:92:08">Beacon 14 - Oda 139</option>
+                    <option value="72:9A:87:72:92:08">Beacon 15 - Oda 120</option>
+                </select>
+                
+                <label>Hedef Oda:</label>
+                <select id="target">
+                    <option value="149">149 - Öğrenci Proje Ofisi</option>
+                    <option value="147">147 - Büyük Veri IoT Lab</option>
+                    <option value="156">156 - Kimya Lab</option>
+                    <option value="141">141 - USAM</option>
+                    <option value="entrance">Giriş</option>
+                    <option value="yemekhane">Yemekhane</option>
+                </select>
+                
+                <button onclick="sendLocation()" style="width:100%; margin-top:10px;">📍 Konum Gönder & Rota Hesapla</button>
+            </div>
+            
+            <div class="section">
+                <h3>Otomatik Güncelleme</h3>
+                <button id="autoBtn" onclick="toggleAuto()">▶️ Başlat (1sn)</button>
+                <button onclick="simulateWalk()">🚶 Yürüyüş Simülasyonu</button>
+            </div>
+
+            <h3>📋 Log</h3>
+            <div id="log" class="log"></div>
+            <button onclick="clearLog()">🗑️ Temizle</button>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let autoInterval = null;
+        let currentMode = 'HYBRID';
+        const logDiv = document.getElementById('log');
+        const statusDiv = document.getElementById('status');
+
+        function log(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const colors = { send: '#ffeb3b', receive: '#4caf50', error: '#f44336', info: '#2196f3' };
+            logDiv.innerHTML += `<span style="color:${colors[type]}">[${time}] ${msg}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function connect() {
+            // Production veya localhost otomatik seçim
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = isLocal 
+                ? 'ws://localhost:8080/ws/navigation'
+                : `${wsProtocol}//${window.location.host}/ws/navigation`;
+            
+            ws = new WebSocket(wsUrl);
+            log(`Bağlanıyor: ${wsUrl}`, 'info');
+            
+            ws.onopen = () => {
+                statusDiv.className = 'status connected';
+                statusDiv.innerHTML = '🟢 Bağlandı';
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('disconnectBtn').disabled = false;
+                log('WebSocket bağlantısı kuruldu', 'info');
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                log('← ' + JSON.stringify(data, null, 2), 'receive');
+                
+                if (data.type === 'location' && data.status === 'ok') {
+                    updateMap(data);
+                }
+                
+                if (data.type === 'modeChanged') {
+                    currentMode = data.mode;
+                    updateModeButtons();
+                }
+                
+                if (data.type === 'welcome') {
+                    currentMode = data.defaultMode;
+                    updateModeButtons();
+                }
+            };
+
+            ws.onclose = () => {
+                statusDiv.className = 'status disconnected';
+                statusDiv.innerHTML = '⭕ Bağlantı kapandı';
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('disconnectBtn').disabled = true;
+                log('Bağlantı kapandı', 'error');
+                stopAuto();
+            };
+
+            ws.onerror = (err) => {
+                log('Hata: ' + err.message, 'error');
+            };
+        }
+
+        function disconnect() {
+            if (ws) ws.close();
+            stopAuto();
+        }
+
+        function updateModeButtons() {
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.getElementById('mode' + currentMode.charAt(0) + currentMode.slice(1).toLowerCase());
+            if (btn) btn.classList.add('active');
+        }
+
+        function updateMap(data) {
+            // Kullanıcı konumunu güncelle
+            const userMarker = document.getElementById('userMarker');
+            userMarker.style.display = 'block';
+            userMarker.setAttribute('transform', `translate(${data.x}, ${data.y})`);
+            
+            // Bilgi kutusunu güncelle
+            document.getElementById('infoLocation').textContent = `(${Math.round(data.x)}, ${Math.round(data.y)})`;
+            document.getElementById('infoRoom').textContent = data.nearestRoom || '-';
+            document.getElementById('infoMode').textContent = data.mode;
+            document.getElementById('infoConfidence').textContent = (data.confidence * 100).toFixed(0) + '%';
+            
+            // Rotayı çiz
+            if (data.path && data.path.length > 0) {
+                const pathData = data.path.map((p, i) => 
+                    (i === 0 ? 'M' : 'L') + p.x + ',' + p.y
+                ).join(' ');
+                document.getElementById('routePath').setAttribute('d', pathData);
+                
+                // Hedef marker'ı göster
+                const lastPoint = data.path[data.path.length - 1];
+                const targetMarker = document.getElementById('targetMarker');
+                targetMarker.style.display = 'block';
+                targetMarker.setAttribute('transform', `translate(${lastPoint.x}, ${lastPoint.y})`);
+            }
+        }
+
+        function sendPing() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                log('Önce bağlan!', 'error');
+                return;
+            }
+            const msg = { type: 'ping' };
+            ws.send(JSON.stringify(msg));
+            log('→ ' + JSON.stringify(msg), 'send');
+        }
+
+        function sendLocation() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                log('Önce bağlan!', 'error');
+                return;
+            }
+            
+            const beacon1 = document.getElementById('beacon1').value;
+            const target = document.getElementById('target').value;
+            
+            // Simüle edilmiş beacon okumaları (gerçek mobil uygulamada BLE'den gelecek)
+            const msg = {
+                type: 'location',
+                beacons: [
+                    { beaconId: beacon1, rssi: -45 + Math.random() * 10 },
+                    { beaconId: 'AE:9A:87:72:92:08', rssi: -60 + Math.random() * 15 },
+                    { beaconId: 'CA:8F:87:72:92:08', rssi: -70 + Math.random() * 15 }
+                ],
+                target: target,
+                mode: currentMode
+            };
+            
+            ws.send(JSON.stringify(msg));
+            log('→ Konum gönderildi', 'send');
+        }
+
+        function setMode(mode) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                log('Önce bağlan!', 'error');
+                return;
+            }
+            const msg = { type: 'setMode', mode: mode };
+            ws.send(JSON.stringify(msg));
+            log('→ Mod: ' + mode, 'send');
+        }
+
+        function toggleAuto() {
+            const btn = document.getElementById('autoBtn');
+            if (autoInterval) {
+                stopAuto();
+            } else {
+                autoInterval = setInterval(sendLocation, 1000);
+                btn.textContent = '⏹️ Durdur';
+                btn.style.background = '#f44336';
+            }
+        }
+        
+        function stopAuto() {
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+            }
+            const btn = document.getElementById('autoBtn');
+            btn.textContent = '▶️ Başlat (1sn)';
+            btn.style.background = '#00d9ff';
+        }
+        
+        // Yürüyüş simülasyonu - beacon'dan beacon'a hareket
+        let walkIndex = 0;
+        const walkPath = [
+            '72:9C:87:72:92:08',  // Beacon 1 - 149
+            'AE:9A:87:72:92:08',  // Beacon 2 - 148
+            '7A:8E:87:72:92:08',  // Beacon 3 - 147
+            'CA:8F:87:72:92:08',  // Beacon 4 - 146
+            '96:9C:87:72:92:08',  // Beacon 5 - 145
+            '36:9B:87:72:92:08',  // Beacon 6 - 142
+        ];
+        
+        function simulateWalk() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                log('Önce bağlan!', 'error');
+                return;
+            }
+            
+            walkIndex = 0;
+            const walkInterval = setInterval(() => {
+                if (walkIndex >= walkPath.length) {
+                    clearInterval(walkInterval);
+                    log('🏁 Yürüyüş tamamlandı!', 'info');
+                    return;
+                }
+                
+                document.getElementById('beacon1').value = walkPath[walkIndex];
+                sendLocation();
+                walkIndex++;
+            }, 2000);
+            
+            log('🚶 Yürüyüş simülasyonu başladı...', 'info');
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = '';
+        }
+    </script>
+</body>
+</html>

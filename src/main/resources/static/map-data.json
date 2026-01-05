@@ -1,0 +1,463 @@
+{
+  "building": {
+    "name": "Mühendislik Fakültesi - 1. Kat",
+    "scale": 18,
+    "unit": "meter",
+    "pixelsPerMeter": 18,
+    "note": "Koridor ~94m, 1450px / 18 = ~81m ana koridor + duvarlar"
+  },
+  "beacons": [
+    {
+      "id": "B1",
+      "x": 1430,
+      "y": 255,
+      "xMeter": 79.4,
+      "yMeter": 14.2,
+      "nearestRoom": "149",
+      "location": "main-corridor-east"
+    },
+    {
+      "id": "B2",
+      "x": 1310,
+      "y": 255,
+      "xMeter": 72.8,
+      "yMeter": 14.2,
+      "nearestRoom": "148",
+      "location": "main-corridor"
+    },
+    {
+      "id": "B3",
+      "x": 1175,
+      "y": 255,
+      "xMeter": 65.3,
+      "yMeter": 14.2,
+      "nearestRoom": "147",
+      "location": "main-corridor"
+    },
+    {
+      "id": "B4",
+      "x": 1160,
+      "y": 195,
+      "xMeter": 64.4,
+      "yMeter": 10.8,
+      "nearestRoom": "155",
+      "location": "main-corridor-north"
+    },
+    {
+      "id": "B5",
+      "x": 1010,
+      "y": 255,
+      "xMeter": 56.1,
+      "yMeter": 14.2,
+      "nearestRoom": "146",
+      "location": "main-corridor"
+    },
+    {
+      "id": "B6",
+      "x": 1000,
+      "y": 195,
+      "xMeter": 55.6,
+      "yMeter": 10.8,
+      "nearestRoom": "156",
+      "location": "main-corridor-north"
+    },
+    {
+      "id": "B7",
+      "x": 870,
+      "y": 255,
+      "xMeter": 48.3,
+      "yMeter": 14.2,
+      "nearestRoom": "145",
+      "location": "main-corridor"
+    },
+    {
+      "id": "B8",
+      "x": 490,
+      "y": 255,
+      "xMeter": 27.2,
+      "yMeter": 14.2,
+      "nearestRoom": "142",
+      "location": "main-corridor-west"
+    },
+    {
+      "id": "B9",
+      "x": 630,
+      "y": 195,
+      "xMeter": 35.0,
+      "yMeter": 10.8,
+      "nearestRoom": "158",
+      "location": "main-corridor-north"
+    },
+    {
+      "id": "B10",
+      "x": 370,
+      "y": 195,
+      "xMeter": 20.6,
+      "yMeter": 10.8,
+      "nearestRoom": "160",
+      "location": "main-corridor-north"
+    },
+    {
+      "id": "B11",
+      "x": 360,
+      "y": 255,
+      "xMeter": 20.0,
+      "yMeter": 14.2,
+      "nearestRoom": "141",
+      "location": "main-corridor"
+    },
+    {
+      "id": "B12",
+      "x": 250,
+      "y": 191,
+      "xMeter": 13.9,
+      "yMeter": 10.6,
+      "nearestRoom": "161",
+      "location": "corridor-junction"
+    },
+    {
+      "id": "B13",
+      "x": 198,
+      "y": 232,
+      "xMeter": 11.0,
+      "yMeter": 12.9,
+      "nearestRoom": "WC-BAY",
+      "location": "left-corridor-north"
+    },
+    {
+      "id": "B14",
+      "x": 206,
+      "y": 539,
+      "xMeter": 11.4,
+      "yMeter": 29.9,
+      "nearestRoom": "120",
+      "location": "left-corridor-south"
+    },
+    {
+      "id": "B15",
+      "x": 278,
+      "y": 498,
+      "xMeter": 15.4,
+      "yMeter": 27.7,
+      "nearestRoom": "entrance",
+      "location": "left-corridor-entrance"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "161",
+      "name": "TTO Ofisi",
+      "type": "office",
+      "bounds": { "x": 200, "y": 40, "width": 100, "height": 140 },
+      "boundsMeters": { "x": 11.1, "y": 2.2, "width": 5.6, "height": 7.8 },
+      "area": 43.7,
+      "center": { "x": 250, "y": 110 },
+      "centerMeter": { "x": 13.9, "y": 6.1 }
+    },
+    {
+      "id": "160",
+      "name": "Derslik 160",
+      "type": "classroom",
+      "bounds": { "x": 310, "y": 40, "width": 120, "height": 140 },
+      "boundsMeters": { "x": 17.2, "y": 2.2, "width": 6.7, "height": 7.8 },
+      "area": 52.3,
+      "center": { "x": 370, "y": 110 },
+      "centerMeter": { "x": 20.6, "y": 6.1 }
+    },
+    {
+      "id": "159",
+      "name": "Derslik 159",
+      "type": "classroom",
+      "bounds": { "x": 440, "y": 40, "width": 120, "height": 140 },
+      "boundsMeters": { "x": 24.4, "y": 2.2, "width": 6.7, "height": 7.8 },
+      "area": 52.3,
+      "center": { "x": 500, "y": 110 },
+      "centerMeter": { "x": 27.8, "y": 6.1 }
+    },
+    {
+      "id": "158",
+      "name": "Derslik 158",
+      "type": "classroom",
+      "bounds": { "x": 570, "y": 40, "width": 120, "height": 140 },
+      "boundsMeters": { "x": 31.7, "y": 2.2, "width": 6.7, "height": 7.8 },
+      "area": 52.3,
+      "center": { "x": 630, "y": 110 },
+      "centerMeter": { "x": 35.0, "y": 6.1 }
+    },
+    {
+      "id": "157",
+      "name": "Derslik 157",
+      "type": "classroom",
+      "bounds": { "x": 700, "y": 40, "width": 120, "height": 140 },
+      "boundsMeters": { "x": 38.9, "y": 2.2, "width": 6.7, "height": 7.8 },
+      "area": 52.3,
+      "center": { "x": 760, "y": 110 },
+      "centerMeter": { "x": 42.2, "y": 6.1 }
+    },
+    {
+      "id": "stairs-1",
+      "name": "Merdiven 1",
+      "type": "stairs",
+      "bounds": { "x": 830, "y": 40, "width": 80, "height": 140 },
+      "boundsMeters": { "x": 46.1, "y": 2.2, "width": 4.4, "height": 7.8 },
+      "area": 34.3,
+      "center": { "x": 870, "y": 110 },
+      "centerMeter": { "x": 48.3, "y": 6.1 }
+    },
+    {
+      "id": "156",
+      "name": "Kimya Lab",
+      "type": "lab",
+      "bounds": { "x": 920, "y": 40, "width": 160, "height": 140 },
+      "boundsMeters": { "x": 51.1, "y": 2.2, "width": 8.9, "height": 7.8 },
+      "area": 69.4,
+      "center": { "x": 1000, "y": 110 },
+      "centerMeter": { "x": 55.6, "y": 6.1 }
+    },
+    {
+      "id": "155",
+      "name": "Modelleme Opt. Lab",
+      "type": "lab",
+      "bounds": { "x": 1090, "y": 40, "width": 140, "height": 140 },
+      "boundsMeters": { "x": 60.6, "y": 2.2, "width": 7.8, "height": 7.8 },
+      "area": 60.8,
+      "center": { "x": 1160, "y": 110 },
+      "centerMeter": { "x": 64.4, "y": 6.1 }
+    },
+    {
+      "id": "WC1",
+      "name": "WC",
+      "type": "wc",
+      "bounds": { "x": 1240, "y": 40, "width": 70, "height": 140 },
+      "boundsMeters": { "x": 68.9, "y": 2.2, "width": 3.9, "height": 7.8 },
+      "area": 30.4,
+      "center": { "x": 1275, "y": 110 },
+      "centerMeter": { "x": 70.8, "y": 6.1 }
+    },
+    {
+      "id": "151",
+      "name": "Maket Atölyesi",
+      "type": "lab",
+      "bounds": { "x": 1320, "y": 40, "width": 130, "height": 140 },
+      "boundsMeters": { "x": 73.3, "y": 2.2, "width": 7.2, "height": 7.8 },
+      "area": 56.2,
+      "center": { "x": 1385, "y": 110 },
+      "centerMeter": { "x": 76.9, "y": 6.1 }
+    },
+    {
+      "id": "131",
+      "name": "Temel Elektronik Lab",
+      "type": "lab",
+      "bounds": { "x": 1460, "y": 40, "width": 160, "height": 140 },
+      "boundsMeters": { "x": 81.1, "y": 2.2, "width": 8.9, "height": 7.8 },
+      "area": 69.4,
+      "center": { "x": 1540, "y": 110 },
+      "centerMeter": { "x": 85.6, "y": 6.1 }
+    },
+    {
+      "id": "141",
+      "name": "Areli İletişim USAM",
+      "type": "office",
+      "bounds": { "x": 300, "y": 270, "width": 120, "height": 150 },
+      "boundsMeters": { "x": 16.7, "y": 15.0, "width": 6.7, "height": 8.3 },
+      "area": 55.6,
+      "center": { "x": 360, "y": 345 },
+      "centerMeter": { "x": 20.0, "y": 19.2 }
+    },
+    {
+      "id": "142",
+      "name": "Derslik 142",
+      "type": "classroom",
+      "bounds": { "x": 430, "y": 270, "width": 120, "height": 150 },
+      "boundsMeters": { "x": 23.9, "y": 15.0, "width": 6.7, "height": 8.3 },
+      "area": 55.6,
+      "center": { "x": 490, "y": 345 },
+      "centerMeter": { "x": 27.2, "y": 19.2 }
+    },
+    {
+      "id": "143",
+      "name": "Derslik 143",
+      "type": "classroom",
+      "bounds": { "x": 560, "y": 270, "width": 120, "height": 150 },
+      "boundsMeters": { "x": 31.1, "y": 15.0, "width": 6.7, "height": 8.3 },
+      "area": 55.6,
+      "center": { "x": 620, "y": 345 },
+      "centerMeter": { "x": 34.4, "y": 19.2 }
+    },
+    {
+      "id": "144",
+      "name": "Derslik 144",
+      "type": "classroom",
+      "bounds": { "x": 690, "y": 270, "width": 120, "height": 150 },
+      "boundsMeters": { "x": 38.3, "y": 15.0, "width": 6.7, "height": 8.3 },
+      "area": 55.6,
+      "center": { "x": 750, "y": 345 },
+      "centerMeter": { "x": 41.7, "y": 19.2 }
+    },
+    {
+      "id": "145",
+      "name": "Müh. Öğr. Çal. Ofisi",
+      "type": "office",
+      "bounds": { "x": 820, "y": 270, "width": 100, "height": 150 },
+      "boundsMeters": { "x": 45.6, "y": 15.0, "width": 5.6, "height": 8.3 },
+      "area": 46.5,
+      "center": { "x": 870, "y": 345 },
+      "centerMeter": { "x": 48.3, "y": 19.2 }
+    },
+    {
+      "id": "146",
+      "name": "Fizik Lab",
+      "type": "lab",
+      "bounds": { "x": 930, "y": 270, "width": 160, "height": 150 },
+      "boundsMeters": { "x": 51.7, "y": 15.0, "width": 8.9, "height": 8.3 },
+      "area": 73.9,
+      "center": { "x": 1010, "y": 345 },
+      "centerMeter": { "x": 56.1, "y": 19.2 }
+    },
+    {
+      "id": "147",
+      "name": "Büyük Veri ve IoT Lab",
+      "type": "lab",
+      "bounds": { "x": 1100, "y": 270, "width": 150, "height": 150 },
+      "boundsMeters": { "x": 61.1, "y": 15.0, "width": 8.3, "height": 8.3 },
+      "area": 68.9,
+      "center": { "x": 1175, "y": 345 },
+      "centerMeter": { "x": 65.3, "y": 19.2 }
+    },
+    {
+      "id": "148",
+      "name": "Araştırma Görev Girişi",
+      "type": "office",
+      "bounds": { "x": 1260, "y": 270, "width": 100, "height": 150 },
+      "boundsMeters": { "x": 70.0, "y": 15.0, "width": 5.6, "height": 8.3 },
+      "area": 46.5,
+      "center": { "x": 1310, "y": 345 },
+      "centerMeter": { "x": 72.8, "y": 19.2 }
+    },
+    {
+      "id": "149",
+      "name": "Öğrenci Proje Ofisi",
+      "type": "lab",
+      "bounds": { "x": 1370, "y": 270, "width": 120, "height": 150 },
+      "boundsMeters": { "x": 76.1, "y": 15.0, "width": 6.7, "height": 8.3 },
+      "area": 55.6,
+      "center": { "x": 1430, "y": 345 },
+      "centerMeter": { "x": 79.4, "y": 19.2 }
+    },
+    {
+      "id": "150",
+      "name": "Kalibrasyon Lab",
+      "type": "lab",
+      "bounds": { "x": 1500, "y": 270, "width": 150, "height": 150 },
+      "boundsMeters": { "x": 83.3, "y": 15.0, "width": 8.3, "height": 8.3 },
+      "area": 68.9,
+      "center": { "x": 1575, "y": 345 },
+      "centerMeter": { "x": 87.5, "y": 19.2 }
+    },
+    {
+      "id": "yemekhane",
+      "name": "Yemekhane",
+      "type": "cafeteria",
+      "bounds": { "x": 20, "y": 190, "width": 170, "height": 80 },
+      "boundsMeters": { "x": 1.1, "y": 10.6, "width": 9.4, "height": 4.4 },
+      "area": 41.4,
+      "center": { "x": 105, "y": 230 },
+      "centerMeter": { "x": 5.8, "y": 12.8 }
+    },
+    {
+      "id": "wc-bay",
+      "name": "WC Bay",
+      "type": "wc",
+      "bounds": { "x": 20, "y": 280, "width": 170, "height": 100 },
+      "boundsMeters": { "x": 1.1, "y": 15.6, "width": 9.4, "height": 5.6 },
+      "area": 52.6,
+      "center": { "x": 105, "y": 330 },
+      "centerMeter": { "x": 5.8, "y": 18.3 }
+    },
+    {
+      "id": "stairs-left",
+      "name": "Merdiven 2",
+      "type": "stairs",
+      "bounds": { "x": 20, "y": 390, "width": 170, "height": 90 },
+      "boundsMeters": { "x": 1.1, "y": 21.7, "width": 9.4, "height": 5.0 },
+      "area": 47.0,
+      "center": { "x": 105, "y": 435 },
+      "centerMeter": { "x": 5.8, "y": 24.2 }
+    },
+    {
+      "id": "139",
+      "name": "Derslik 139",
+      "type": "classroom",
+      "bounds": { "x": 20, "y": 490, "width": 170, "height": 100 },
+      "boundsMeters": { "x": 1.1, "y": 27.2, "width": 9.4, "height": 5.6 },
+      "area": 52.6,
+      "center": { "x": 105, "y": 540 },
+      "centerMeter": { "x": 5.8, "y": 30.0 }
+    },
+    {
+      "id": "120",
+      "name": "Derslik 120",
+      "type": "classroom",
+      "bounds": { "x": 300, "y": 430, "width": 120, "height": 140 },
+      "boundsMeters": { "x": 16.7, "y": 23.9, "width": 6.7, "height": 7.8 },
+      "area": 52.3,
+      "center": { "x": 360, "y": 500 },
+      "centerMeter": { "x": 20.0, "y": 27.8 }
+    },
+    {
+      "id": "entrance",
+      "name": "Giriş",
+      "type": "entrance",
+      "bounds": { "x": 200, "y": 680, "width": 90, "height": 30 },
+      "boundsMeters": { "x": 11.1, "y": 37.8, "width": 5.0, "height": 1.7 },
+      "center": { "x": 245, "y": 695 },
+      "centerMeter": { "x": 13.6, "y": 38.6 }
+    }
+  ],
+  "corridors": [
+    {
+      "id": "main-corridor",
+      "name": "Ana Koridor",
+      "bounds": { "x": 200, "y": 180, "width": 1450, "height": 90 },
+      "boundsMeters": { "x": 11.1, "y": 10.0, "width": 80.6, "height": 5.0 },
+      "centerY": 225,
+      "centerYMeter": 12.5
+    },
+    {
+      "id": "left-corridor",
+      "name": "Sol Koridor",
+      "bounds": { "x": 200, "y": 270, "width": 90, "height": 430 },
+      "boundsMeters": { "x": 11.1, "y": 15.0, "width": 5.0, "height": 23.9 },
+      "centerX": 245,
+      "centerXMeter": 13.6
+    }
+  ],
+  "navigationGraph": {
+    "nodes": [
+      { "id": "N1", "x": 245, "y": 225, "xMeter": 13.6, "yMeter": 12.5, "type": "junction", "description": "Koridor kavşağı" },
+      { "id": "N2", "x": 500, "y": 225, "xMeter": 27.8, "yMeter": 12.5, "type": "waypoint", "description": "Ana koridor orta-batı" },
+      { "id": "N3", "x": 800, "y": 225, "xMeter": 44.4, "yMeter": 12.5, "type": "waypoint", "description": "Ana koridor orta" },
+      { "id": "N4", "x": 1100, "y": 225, "xMeter": 61.1, "yMeter": 12.5, "type": "waypoint", "description": "Ana koridor orta-doğu" },
+      { "id": "N5", "x": 1400, "y": 225, "xMeter": 77.8, "yMeter": 12.5, "type": "waypoint", "description": "Ana koridor doğu" },
+      { "id": "N6", "x": 1650, "y": 225, "xMeter": 91.7, "yMeter": 12.5, "type": "waypoint", "description": "Ana koridor son" },
+      { "id": "N7", "x": 245, "y": 350, "xMeter": 13.6, "yMeter": 19.4, "type": "waypoint", "description": "Sol koridor orta" },
+      { "id": "N8", "x": 245, "y": 500, "xMeter": 13.6, "yMeter": 27.8, "type": "waypoint", "description": "Sol koridor alt" },
+      { "id": "N9", "x": 245, "y": 650, "xMeter": 13.6, "yMeter": 36.1, "type": "waypoint", "description": "Sol koridor giriş" }
+    ],
+    "edges": [
+      { "from": "N1", "to": "N2", "distancePixel": 255, "distanceMeter": 14.2 },
+      { "from": "N2", "to": "N3", "distancePixel": 300, "distanceMeter": 16.7 },
+      { "from": "N3", "to": "N4", "distancePixel": 300, "distanceMeter": 16.7 },
+      { "from": "N4", "to": "N5", "distancePixel": 300, "distanceMeter": 16.7 },
+      { "from": "N5", "to": "N6", "distancePixel": 250, "distanceMeter": 13.9 },
+      { "from": "N1", "to": "N7", "distancePixel": 125, "distanceMeter": 6.9 },
+      { "from": "N7", "to": "N8", "distancePixel": 150, "distanceMeter": 8.3 },
+      { "from": "N8", "to": "N9", "distancePixel": 150, "distanceMeter": 8.3 }
+    ]
+  },
+  "beaconCoverage": {
+    "beaconRangeMeter": 8,
+    "beaconRangePixel": 144,
+    "trilaterationMinBeacons": 3
+  }
+}
