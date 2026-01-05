@@ -21,6 +21,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         // ws://localhost:8080/ws/navigation adresinden erisilecek
         registry.addHandler(navigationWebSocketHandler, "/ws/navigation")
-                .setAllowedOrigins("*"); // Mobil uygulamadan erisim icin CORS izni
+                .setAllowedOriginPatterns("*") // Spring Security uyumlu CORS
+                .withSockJS(); // Cloudflare proxy için SockJS fallback
     }
 }
