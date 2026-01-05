@@ -65,17 +65,17 @@ public class MapService {
         beaconToRoomMap.put("72:9C:87:72:92:08", "149");  // Beacon 1
         beaconToRoomMap.put("AE:9A:87:72:92:08", "148");  // Beacon 2
         beaconToRoomMap.put("7A:8E:87:72:92:08", "147");  // Beacon 3
-        beaconToRoomMap.put("CA:8F:87:72:92:08", "146");  // Beacon 4
-        beaconToRoomMap.put("96:9C:87:72:92:08", "145");  // Beacon 5
-        beaconToRoomMap.put("36:9B:87:72:92:08", "142");  // Beacon 6
-        beaconToRoomMap.put("86:9C:87:72:92:08", "141");  // Beacon 7
-        beaconToRoomMap.put("E6:8F:87:72:92:08", "155");  // Beacon 8
-        beaconToRoomMap.put("66:0A:84:72:92:08", "156");  // Beacon 9
-        beaconToRoomMap.put("1A:8F:87:72:92:08", "158");  // Beacon 10
-        beaconToRoomMap.put("CE:8F:87:72:92:08", "160");  // Beacon 11
+        beaconToRoomMap.put("CA:8F:87:72:92:08", "155");  // Beacon 4
+        beaconToRoomMap.put("96:9C:87:72:92:08", "146");  // Beacon 5
+        beaconToRoomMap.put("36:9B:87:72:92:08", "156");  // Beacon 6
+        beaconToRoomMap.put("86:9C:87:72:92:08", "145");  // Beacon 7
+        beaconToRoomMap.put("E6:8F:87:72:92:08", "142");  // Beacon 8
+        beaconToRoomMap.put("66:0A:84:72:92:08", "158");  // Beacon 9
+        beaconToRoomMap.put("1A:8F:87:72:92:08", "160");  // Beacon 10
+        beaconToRoomMap.put("CE:8F:87:72:92:08", "141");  // Beacon 11
         beaconToRoomMap.put("0E:9B:87:72:92:08", "161");  // Beacon 12
         beaconToRoomMap.put("D6:8D:87:72:92:08", "yemekhane");  // Beacon 13
-        beaconToRoomMap.put("06:88:87:72:92:08", "139");  // Beacon 14
+        beaconToRoomMap.put("06:8E:87:72:92:08", "139");  // Beacon 14
         beaconToRoomMap.put("72:9A:87:72:92:08", "120");  // Beacon 15
     }
 
