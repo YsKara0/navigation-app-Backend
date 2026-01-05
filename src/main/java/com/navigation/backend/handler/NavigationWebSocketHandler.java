@@ -104,6 +104,12 @@ public class NavigationWebSocketHandler extends TextWebSocketHandler {
         }
 
         List<Map<String, Object>> beaconReadings = (List<Map<String, Object>>) data.get("beacons");
+        
+        // Debug: Gelen beacon verilerini logla
+        System.out.println("[WebSocket] Gelen beacon sayisi: " + beaconReadings.size());
+        for (Map<String, Object> beacon : beaconReadings) {
+            System.out.println("[WebSocket] Beacon: " + beacon);
+        }
 
         // Konum belirleme modunu al (opsiyonel)
         PositioningMode mode = positioningService.getDefaultMode();
@@ -119,7 +125,13 @@ public class NavigationWebSocketHandler extends TextWebSocketHandler {
         PositioningResult result = positioningService.calculateLocation(beaconReadings, mode);
 
         if (!result.isValid()) {
-            sendError(session, result.getErrorMessage());
+            // Daha detaylı hata mesajı
+            String errorDetail = result.getErrorMessage();
+            if (beaconReadings.size() < 3 && mode == PositioningMode.TRILATERATION) {
+                errorDetail += " (Trilateration icin en az 3 beacon gerekli, " + beaconReadings.size() + " beacon alindi)";
+            }
+            System.out.println("[WebSocket] Konum hesaplanamadi: " + errorDetail);
+            sendError(session, errorDetail);
             return;
         }
 

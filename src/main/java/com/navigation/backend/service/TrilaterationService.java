@@ -172,23 +172,66 @@ public class TrilaterationService {
         List<BeaconReading> readings = new ArrayList<>();
 
         for (Map<String, Object> reading : beaconReadings) {
-            // "beaconId" veya "id" alanını kontrol et
-            String beaconId = (String) reading.getOrDefault("beaconId", reading.get("id"));
+            // "beaconId", "id" veya "macAddress" alanını kontrol et
+            String beaconId = (String) reading.getOrDefault("beaconId", 
+                              reading.getOrDefault("id", reading.get("macAddress")));
             Integer rssi = getIntValue(reading.get("rssi"));
 
             if (beaconId == null || rssi == null) continue;
 
-            Beacon beacon = mapService.getBeacon(beaconId);
-            if (beacon == null) continue;
+            // MAC adresini normalize et ve ters versiyonunu da dene
+            Beacon beacon = findBeaconByMac(beaconId);
+            if (beacon == null) {
+                System.out.println("[TrilaterationService] Beacon bulunamadi: " + beaconId);
+                continue;
+            }
 
             double distance = rssiToDistance(rssi);
-            readings.add(new BeaconReading(beacon, beaconId, rssi, distance));
+            readings.add(new BeaconReading(beacon, beacon.getUuid(), rssi, distance));
         }
 
         // Mesafeye göre sırala (yakından uzağa)
         readings.sort(Comparator.comparingDouble(r -> r.distance));
 
         return readings;
+    }
+
+    /**
+     * MAC adresine göre beacon bulur (normal ve ters formatta dener)
+     */
+    private Beacon findBeaconByMac(String macAddress) {
+        if (macAddress == null) return null;
+        
+        // 1. Direkt ara
+        Beacon beacon = mapService.getBeacon(macAddress.toUpperCase());
+        if (beacon != null) return beacon;
+        
+        // 2. Ters MAC formatını dene (08:92:72:87:8D:D6 -> D6:8D:87:72:92:08)
+        String reversedMac = reverseMacAddress(macAddress);
+        beacon = mapService.getBeacon(reversedMac);
+        if (beacon != null) {
+            System.out.println("[TrilaterationService] Beacon ters MAC ile bulundu: " + macAddress + " -> " + reversedMac);
+            return beacon;
+        }
+        
+        return null;
+    }
+
+    /**
+     * MAC adresini tersine çevirir
+     * Örn: 08:92:72:87:8D:D6 -> D6:8D:87:72:92:08
+     */
+    private String reverseMacAddress(String mac) {
+        if (mac == null) return null;
+        String[] parts = mac.toUpperCase().split(":");
+        if (parts.length != 6) return mac.toUpperCase();
+        
+        StringBuilder reversed = new StringBuilder();
+        for (int i = parts.length - 1; i >= 0; i--) {
+            reversed.append(parts[i]);
+            if (i > 0) reversed.append(":");
+        }
+        return reversed.toString();
     }
 
     /**
