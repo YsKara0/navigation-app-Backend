@@ -36,22 +36,21 @@ public class MapService {
             beaconRepository.save(new Beacon("72:9C:87:72:92:08", 1430, 255));  // Beacon 1
             beaconRepository.save(new Beacon("AE:9A:87:72:92:08", 1310, 255));  // Beacon 2
             beaconRepository.save(new Beacon("7A:8E:87:72:92:08", 1175, 255));  // Beacon 3
-            beaconRepository.save(new Beacon("CA:8F:87:72:92:08", 1010, 255));  // Beacon 4
-            beaconRepository.save(new Beacon("96:9C:87:72:92:08", 870, 255));   // Beacon 5
-            beaconRepository.save(new Beacon("36:9B:87:72:92:08", 490, 255));   // Beacon 6
-            beaconRepository.save(new Beacon("86:9C:87:72:92:08", 360, 255));   // Beacon 7
-            
+            beaconRepository.save(new Beacon("96:9C:87:72:92:08", 1010, 255));   // Beacon 5
+            beaconRepository.save(new Beacon("86:9C:87:72:92:08", 870, 255));   // Beacon 7
+            beaconRepository.save(new Beacon("E6:8F:87:72:92:08", 490, 255));  // Beacon 8
+            beaconRepository.save(new Beacon("CE:8F:87:72:92:08", 360, 255));   // Beacon 11
             // Ana koridor - kuzey duvarı (y=195)
-            beaconRepository.save(new Beacon("E6:8F:87:72:92:08", 1160, 195));  // Beacon 8
-            beaconRepository.save(new Beacon("66:0A:84:72:92:08", 1000, 195));  // Beacon 9
-            beaconRepository.save(new Beacon("1A:8F:87:72:92:08", 630, 195));   // Beacon 10
-            beaconRepository.save(new Beacon("CE:8F:87:72:92:08", 370, 195));   // Beacon 11
-            beaconRepository.save(new Beacon("0E:9B:87:72:92:08", 250, 191));   // Beacon 12
+            beaconRepository.save(new Beacon("CA:8F:87:72:92:08", 1160, 195));  // Beacon 4
+            beaconRepository.save(new Beacon("36:9B:87:72:92:08", 1000, 195));   // Beacon 6
+            beaconRepository.save(new Beacon("66:0A:84:72:92:08", 630, 195));  // Beacon 9
+            beaconRepository.save(new Beacon("1A:8F:87:72:92:08", 370, 195));   // Beacon 10
+            beaconRepository.save(new Beacon("0E:9B:87:72:92:08", 250, 195));   // Beacon 12
             
             // Sol koridor
-            beaconRepository.save(new Beacon("D6:8D:87:72:92:08", 198, 232));   // Beacon 13
-            beaconRepository.save(new Beacon("06:88:87:72:92:08", 206, 539));   // Beacon 14
-            beaconRepository.save(new Beacon("72:9A:87:72:92:08", 278, 498));   // Beacon 15
+            beaconRepository.save(new Beacon("D6:8D:87:72:92:08", 230, 280));   // Beacon 13
+            beaconRepository.save(new Beacon("06:8E:87:72:92:08", 260, 500));   // Beacon 14
+            beaconRepository.save(new Beacon("72:9A:87:72:92:08", 230, 620));   // Beacon 15
             
             System.out.println("15 beacon yuklendi (MAC adresleriyle).");
         }
