@@ -16,6 +16,7 @@ import com.navigation.backend.service.TrilaterationService.TrilaterationResult;
  * Proximity ve Trilateration servislerini yönetir.
  * Duruma göre en uygun yöntemi seçer veya hibrit yaklaşım kullanır.
  * Konum geçişlerini yumuşatma (smoothing) özelliği içerir.
+ * Aktif rota varsa konumu rota üzerine kilitler (snap to route).
  */
 @Service
 public class PositioningService {
@@ -49,6 +50,17 @@ public class PositioningService {
     
     // Varsayılan kullanıcı ID'si (tek kullanıcı senaryosu için)
     private static final String DEFAULT_USER = "default";
+
+    // ============== SNAP TO ROUTE PARAMETRELERİ ==============
+    // Kullanıcı bazlı aktif rotalar (userId -> Route waypoints)
+    private final Map<String, List<Point>> userActiveRoutes = new ConcurrentHashMap<>();
+    
+    // Rotaya snap yapılacak maksimum mesafe (piksel)
+    // Bu mesafeden uzaksa kullanıcı rotadan çıkmış sayılır
+    private static final double SNAP_TO_ROUTE_THRESHOLD = 60.0; // ~3.3 metre
+    
+    // Snap to route özelliği açık/kapalı
+    private boolean snapToRouteEnabled = true;
 
     public PositioningService(ProximityService proximityService, TrilaterationService trilaterationService) {
         this.proximityService = proximityService;
@@ -97,9 +109,16 @@ public class PositioningService {
                 break;
         }
 
-        // Smoothing uygula
+        // Smoothing ve Snap to Route uygula
         if (rawResult.isValid()) {
-            return applySmoothingAndSpeedLimit(rawResult, userId);
+            PositioningResult smoothedResult = applySmoothingAndSpeedLimit(rawResult, userId);
+            
+            // Aktif rota varsa ve snap to route açıksa, konumu rotaya kilitle
+            if (snapToRouteEnabled && userActiveRoutes.containsKey(userId)) {
+                return applySnapToRoute(smoothedResult, userId);
+            }
+            
+            return smoothedResult;
         }
         
         return rawResult;
@@ -299,6 +318,189 @@ public class PositioningService {
         double smoothedX = SMOOTHING_FACTOR * rawLocation.getX() + (1 - SMOOTHING_FACTOR) * lastLocation.getX();
         double smoothedY = SMOOTHING_FACTOR * rawLocation.getY() + (1 - SMOOTHING_FACTOR) * lastLocation.getY();
         return new Point(smoothedX, smoothedY);
+    }
+
+    // ============== SNAP TO ROUTE METODLARI ==============
+    
+    /**
+     * Konumu aktif rota üzerine kilitler (snap to route)
+     * Kullanıcı rotada yürürken sağa sola sapmaları önler
+     */
+    private PositioningResult applySnapToRoute(PositioningResult result, String userId) {
+        List<Point> route = userActiveRoutes.get(userId);
+        if (route == null || route.size() < 2) {
+            return result;
+        }
+        
+        Point currentLocation = result.getLocation();
+        
+        // En yakın rota segmentini ve o segment üzerindeki noktayı bul
+        SnapResult snapResult = findNearestPointOnRoute(currentLocation, route);
+        
+        // Eğer rotaya çok uzaksa (eşik aşıldı), snap yapma - kullanıcı rotadan çıkmış
+        if (snapResult.distance > SNAP_TO_ROUTE_THRESHOLD) {
+            System.out.println("[PositioningService] Kullanıcı rotadan çıkmış: " + 
+                String.format("%.1f px > %.1f px eşik", snapResult.distance, SNAP_TO_ROUTE_THRESHOLD));
+            return result; // Orijinal konumu döndür
+        }
+        
+        System.out.println("[PositioningService] Snap to route: (" + 
+            (int)currentLocation.getX() + "," + (int)currentLocation.getY() + ") -> (" +
+            (int)snapResult.snappedPoint.getX() + "," + (int)snapResult.snappedPoint.getY() + 
+            ") mesafe=" + String.format("%.1f", snapResult.distance) + "px");
+        
+        return new PositioningResult(
+            snapResult.snappedPoint,
+            result.getMode(),
+            result.getConfidence(),
+            result.getNearestBeaconId(),
+            result.getNearestRoom(),
+            result.getEstimatedDistance()
+        );
+    }
+    
+    /**
+     * Rota üzerindeki en yakın noktayı bulur
+     * Her segment (çizgi parçası) için hesaplar ve en yakınını döner
+     */
+    private SnapResult findNearestPointOnRoute(Point location, List<Point> route) {
+        double minDistance = Double.MAX_VALUE;
+        Point nearestPoint = route.get(0);
+        
+        // Her segment için kontrol et
+        for (int i = 0; i < route.size() - 1; i++) {
+            Point segmentStart = route.get(i);
+            Point segmentEnd = route.get(i + 1);
+            
+            // Bu segment üzerindeki en yakın noktayı bul
+            Point pointOnSegment = getNearestPointOnSegment(location, segmentStart, segmentEnd);
+            double distance = distanceBetween(location, pointOnSegment);
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestPoint = pointOnSegment;
+            }
+        }
+        
+        return new SnapResult(nearestPoint, minDistance);
+    }
+    
+    /**
+     * Bir çizgi segmenti üzerindeki en yakın noktayı hesaplar
+     * Matematiksel projeksiyon kullanır
+     */
+    private Point getNearestPointOnSegment(Point p, Point segmentStart, Point segmentEnd) {
+        double x1 = segmentStart.getX();
+        double y1 = segmentStart.getY();
+        double x2 = segmentEnd.getX();
+        double y2 = segmentEnd.getY();
+        double px = p.getX();
+        double py = p.getY();
+        
+        // Segment vektörü
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        
+        // Segment uzunluğunun karesi
+        double segmentLengthSquared = dx * dx + dy * dy;
+        
+        // Segment çok kısa ise başlangıç noktasını döndür
+        if (segmentLengthSquared < 0.0001) {
+            return segmentStart;
+        }
+        
+        // Projeksiyon parametresi t (0-1 arası segment üzerinde)
+        double t = ((px - x1) * dx + (py - y1) * dy) / segmentLengthSquared;
+        
+        // t'yi 0-1 arasında sınırla (segment dışına çıkmasın)
+        t = Math.max(0, Math.min(1, t));
+        
+        // Segment üzerindeki nokta
+        double nearestX = x1 + t * dx;
+        double nearestY = y1 + t * dy;
+        
+        return new Point(nearestX, nearestY);
+    }
+    
+    /**
+     * İki nokta arası mesafe
+     */
+    private double distanceBetween(Point p1, Point p2) {
+        double dx = p2.getX() - p1.getX();
+        double dy = p2.getY() - p1.getY();
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    /**
+     * Snap sonucu (internal class)
+     */
+    private static class SnapResult {
+        final Point snappedPoint;
+        final double distance;
+        
+        SnapResult(Point snappedPoint, double distance) {
+            this.snappedPoint = snappedPoint;
+            this.distance = distance;
+        }
+    }
+    
+    // ============== ROTA YÖNETİM METODLARI ==============
+    
+    /**
+     * Kullanıcı için aktif rota ayarlar
+     * @param userId Kullanıcı ID (session ID)
+     * @param route Rota waypoint listesi
+     */
+    public void setActiveRoute(String userId, List<Point> route) {
+        if (route != null && route.size() >= 2) {
+            userActiveRoutes.put(userId, route);
+            System.out.println("[PositioningService] Aktif rota ayarlandı: " + userId + 
+                " (" + route.size() + " waypoint)");
+        }
+    }
+    
+    /**
+     * Varsayılan kullanıcı için aktif rota ayarlar
+     */
+    public void setActiveRoute(List<Point> route) {
+        setActiveRoute(DEFAULT_USER, route);
+    }
+    
+    /**
+     * Kullanıcının aktif rotasını temizler
+     */
+    public void clearActiveRoute(String userId) {
+        userActiveRoutes.remove(userId);
+        System.out.println("[PositioningService] Aktif rota temizlendi: " + userId);
+    }
+    
+    /**
+     * Varsayılan kullanıcının aktif rotasını temizler
+     */
+    public void clearActiveRoute() {
+        clearActiveRoute(DEFAULT_USER);
+    }
+    
+    /**
+     * Kullanıcının aktif rotası var mı?
+     */
+    public boolean hasActiveRoute(String userId) {
+        return userActiveRoutes.containsKey(userId);
+    }
+    
+    /**
+     * Snap to route özelliğini aç/kapat
+     */
+    public void setSnapToRouteEnabled(boolean enabled) {
+        this.snapToRouteEnabled = enabled;
+        System.out.println("[PositioningService] Snap to route: " + (enabled ? "AÇIK" : "KAPALI"));
+    }
+    
+    /**
+     * Snap to route özelliği açık mı?
+     */
+    public boolean isSnapToRouteEnabled() {
+        return snapToRouteEnabled;
     }
     
     /**

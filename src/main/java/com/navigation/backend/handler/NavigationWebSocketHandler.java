@@ -60,6 +60,9 @@ public class NavigationWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         connectedUsers.remove(session);
+        // Kullanıcının aktif rotasını ve konum state'ini temizle
+        positioningService.clearActiveRoute(session.getId());
+        positioningService.resetUserLocationState(session.getId());
         System.out.println("Baglanti kapandi: " + session.getId());
     }
 
@@ -174,10 +177,18 @@ public class NavigationWebSocketHandler extends TextWebSocketHandler {
                 List<Point> path = navigationService.calculateShortestPath(result.getLocation(), targetDestination);
                 response.put("path", path);
                 response.put("hasRoute", true);
+                
+                // Aktif rotayı PositioningService'e kaydet (snap to route için)
+                if (path != null && path.size() >= 2) {
+                    positioningService.setActiveRoute(session.getId(), path);
+                }
             } catch (Exception e) {
                 response.put("hasRoute", false);
                 response.put("routeError", e.getMessage());
             }
+        } else {
+            // Hedef yoksa aktif rotayı temizle
+            positioningService.clearActiveRoute(session.getId());
         }
 
         // MOBILE GERI GÖNDER

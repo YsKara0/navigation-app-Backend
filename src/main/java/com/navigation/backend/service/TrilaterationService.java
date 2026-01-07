@@ -63,6 +63,19 @@ public class TrilaterationService {
     private static final double LEFT_CORRIDOR_Y_MIN = 270;
     private static final double LEFT_CORRIDOR_Y_MAX = 700;
 
+    // Koridor merkez y koordinatı (ana koridor için)
+    private static final double MAIN_CORRIDOR_CENTER_Y = 225;
+    // Sol koridor merkez x koordinatı
+    private static final double LEFT_CORRIDOR_CENTER_X = 245;
+    
+    // Soft constraint parametreleri
+    // Koridor dışına çıkıldığında ne kadar sert geri çekilsin (0-1 arası, 1 = tamamen geri çek)
+    private static final double SOFT_CONSTRAINT_STRENGTH = 0.7;
+    
+    // Non-linear solver parametreleri
+    private static final int MAX_ITERATIONS = 50;
+    private static final double CONVERGENCE_THRESHOLD = 0.5; // piksel
+
     public TrilaterationService(MapService mapService) {
         this.mapService = mapService;
     }
@@ -84,27 +97,267 @@ public class TrilaterationService {
             return new TrilaterationResult(null, 0, "Geçerli beacon sayısı yetersiz");
         }
 
-        // En güçlü 3 beacon ile hesapla
-        List<BeaconReading> topThree = readings.subList(0, Math.min(3, readings.size()));
+        // İlk tahmin: RSSI bazlı ağırlıklı merkez
+        Point initialGuess = calculateWeightedCentroid(readings);
         
-        Point location = trilaterateThreeBeacons(
-            topThree.get(0).beacon, topThree.get(0).distance,
-            topThree.get(1).beacon, topThree.get(1).distance,
-            topThree.get(2).beacon, topThree.get(2).distance
-        );
+        // Non-linear Least Squares ile optimize et (tüm beaconları kullan, max 6)
+        List<BeaconReading> usedReadings = readings.subList(0, Math.min(6, readings.size()));
+        Point location = nonLinearLeastSquares(initialGuess, usedReadings);
 
-        // Daha fazla beacon varsa, Weighted Least Squares ile iyileştir
-        if (readings.size() > 3) {
-            location = refineWithWeightedLeastSquares(location, readings);
-        }
-
-        // Konumu koridor sınırlarına kısıtla
-        location = constrainToCorridor(location);
+        // Soft corridor constraint uygula (duvara yapıştırma yerine yumuşak çekme)
+        location = applySoftCorridorConstraint(location);
 
         // Güvenilirlik hesapla (0-1 arası)
         double confidence = calculateConfidence(readings);
 
         return new TrilaterationResult(location, confidence, "Başarılı");
+    }
+    
+    /**
+     * RSSI bazlı ağırlıklı merkez hesaplar (ilk tahmin için)
+     * Güçlü sinyale sahip beaconlara daha fazla ağırlık verir
+     */
+    private Point calculateWeightedCentroid(List<BeaconReading> readings) {
+        double sumX = 0, sumY = 0, totalWeight = 0;
+        
+        for (BeaconReading reading : readings) {
+            // RSSI bazlı ağırlık: güçlü sinyal = yüksek ağırlık
+            // RSSI -50 ile -90 arası, -50'ye yakın = güçlü
+            double rssiWeight = Math.pow(10, (reading.rssi + 100) / 30.0);
+            
+            // Mesafe bazlı ağırlık: yakın = yüksek ağırlık
+            double distanceWeight = 1.0 / Math.pow(Math.max(reading.distance, 0.5), 2);
+            
+            // Kombine ağırlık
+            double weight = rssiWeight * distanceWeight;
+            
+            sumX += reading.beacon.getX() * weight;
+            sumY += reading.beacon.getY() * weight;
+            totalWeight += weight;
+        }
+        
+        if (totalWeight == 0) {
+            // Fallback: basit ortalama
+            for (BeaconReading reading : readings) {
+                sumX += reading.beacon.getX();
+                sumY += reading.beacon.getY();
+            }
+            return new Point(sumX / readings.size(), sumY / readings.size());
+        }
+        
+        return new Point(sumX / totalWeight, sumY / totalWeight);
+    }
+    
+    /**
+     * Non-Linear Least Squares Solver
+     * Gradient descent benzeri iteratif optimizasyon
+     * Daireler kesişmese bile en iyi tahmini verir
+     */
+    private Point nonLinearLeastSquares(Point initial, List<BeaconReading> readings) {
+        double x = initial.getX();
+        double y = initial.getY();
+        
+        double learningRate = 0.5;
+        double prevError = Double.MAX_VALUE;
+        
+        for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
+            double gradX = 0, gradY = 0;
+            double totalWeight = 0;
+            double currentError = 0;
+            
+            for (BeaconReading reading : readings) {
+                double bx = reading.beacon.getX();
+                double by = reading.beacon.getY();
+                double expectedDist = reading.distance * PIXELS_PER_METER;
+                
+                double actualDist = Math.sqrt(Math.pow(x - bx, 2) + Math.pow(y - by, 2));
+                if (actualDist < 1) actualDist = 1;
+                
+                // Hata: beklenen - gerçek mesafe
+                double error = actualDist - expectedDist;
+                currentError += error * error;
+                
+                // RSSI bazlı ağırlık (güçlü sinyal = daha güvenilir)
+                double weight = Math.pow(10, (reading.rssi + 90) / 25.0);
+                
+                // Gradient hesapla
+                double dx = (x - bx) / actualDist;
+                double dy = (y - by) / actualDist;
+                
+                gradX += weight * error * dx;
+                gradY += weight * error * dy;
+                totalWeight += weight;
+            }
+            
+            if (totalWeight > 0) {
+                gradX /= totalWeight;
+                gradY /= totalWeight;
+            }
+            
+            // Adaptive learning rate
+            if (currentError > prevError) {
+                learningRate *= 0.5; // Hata arttıysa yavaşla
+            } else if (currentError < prevError * 0.9) {
+                learningRate = Math.min(learningRate * 1.1, 1.0); // İyileşiyorsa hızlan
+            }
+            
+            // Güncelle
+            double newX = x - learningRate * gradX;
+            double newY = y - learningRate * gradY;
+            
+            // Convergence kontrolü
+            double movement = Math.sqrt(Math.pow(newX - x, 2) + Math.pow(newY - y, 2));
+            if (movement < CONVERGENCE_THRESHOLD) {
+                System.out.println("[Trilateration] Converged at iteration " + iter + 
+                    ", error=" + String.format("%.1f", Math.sqrt(currentError)));
+                break;
+            }
+            
+            x = newX;
+            y = newY;
+            prevError = currentError;
+        }
+        
+        return new Point(x, y);
+    }
+    
+    /**
+     * Soft Corridor Constraint
+     * Koridor dışındaysa duvara yapıştırmak yerine yumuşak şekilde merkeze çeker
+     */
+    private Point applySoftCorridorConstraint(Point point) {
+        if (point == null) return null;
+        
+        double x = point.getX();
+        double y = point.getY();
+        
+        // Hangi koridora daha yakın?
+        boolean nearMainCorridor = isNearMainCorridor(x, y);
+        boolean nearLeftCorridor = isNearLeftCorridor(x, y);
+        
+        // Zaten koridorun içindeyse değiştirme
+        if (isInMainCorridor(x, y) || isInLeftCorridor(x, y)) {
+            return point;
+        }
+        
+        // Kavşak bölgesi kontrolü (iki koridor kesişimi)
+        boolean inJunction = x >= LEFT_CORRIDOR_X_MIN && x <= LEFT_CORRIDOR_X_MAX &&
+                            y >= MAIN_CORRIDOR_Y_MIN && y <= LEFT_CORRIDOR_Y_MIN + 30;
+        
+        if (inJunction) {
+            // Kavşakta - sadece sınırları kontrol et
+            double newX = Math.max(MAIN_CORRIDOR_X_MIN, Math.min(x, MAIN_CORRIDOR_X_MAX));
+            double newY = Math.max(MAIN_CORRIDOR_Y_MIN, y);
+            return new Point(newX, newY);
+        }
+        
+        // Ana koridor bölgesinde mi? (y koordinatına göre)
+        if (y < LEFT_CORRIDOR_Y_MIN || nearMainCorridor) {
+            // Ana koridora soft constraint uygula
+            return applySoftConstraintToMainCorridor(x, y);
+        } else if (nearLeftCorridor) {
+            // Sol koridora soft constraint uygula
+            return applySoftConstraintToLeftCorridor(x, y);
+        }
+        
+        // Hiçbirine yakın değil - en yakın koridora çek
+        Point nearestMain = getNearestPointInMainCorridor(x, y);
+        Point nearestLeft = getNearestPointInLeftCorridor(x, y);
+        
+        double distToMain = distance(x, y, nearestMain.getX(), nearestMain.getY());
+        double distToLeft = distance(x, y, nearestLeft.getX(), nearestLeft.getY());
+        
+        if (distToMain <= distToLeft) {
+            return applySoftConstraintToMainCorridor(x, y);
+        } else {
+            return applySoftConstraintToLeftCorridor(x, y);
+        }
+    }
+    
+    /**
+     * Ana koridora soft constraint uygular
+     */
+    private Point applySoftConstraintToMainCorridor(double x, double y) {
+        // X sınırları (hard constraint - koridorun dışına çıkamaz)
+        double newX = Math.max(MAIN_CORRIDOR_X_MIN, Math.min(x, MAIN_CORRIDOR_X_MAX));
+        
+        // Y için soft constraint - merkeze doğru çek
+        double newY;
+        if (y < MAIN_CORRIDOR_Y_MIN) {
+            // Üstte - aşağı çek
+            double overflow = MAIN_CORRIDOR_Y_MIN - y;
+            newY = MAIN_CORRIDOR_Y_MIN + overflow * (1 - SOFT_CONSTRAINT_STRENGTH);
+            newY = Math.max(newY, MAIN_CORRIDOR_Y_MIN); // Hard limit
+        } else if (y > MAIN_CORRIDOR_Y_MAX) {
+            // Altta - yukarı çek  
+            double overflow = y - MAIN_CORRIDOR_Y_MAX;
+            newY = MAIN_CORRIDOR_Y_MAX - overflow * (1 - SOFT_CONSTRAINT_STRENGTH);
+            newY = Math.min(newY, MAIN_CORRIDOR_Y_MAX); // Hard limit
+        } else {
+            newY = y; // Zaten içinde
+        }
+        
+        // Merkeze doğru yumuşak çekme (opsiyonel - daha stabil konum için)
+        double centerPull = 0.2; // %20 merkeze çekme
+        newY = newY + (MAIN_CORRIDOR_CENTER_Y - newY) * centerPull;
+        
+        if (Math.abs(newY - y) > 1) {
+            System.out.println("[Trilateration] Soft constraint (ana koridor): y=" + 
+                (int)y + " -> " + (int)newY);
+        }
+        
+        return new Point(newX, newY);
+    }
+    
+    /**
+     * Sol koridora soft constraint uygular
+     */
+    private Point applySoftConstraintToLeftCorridor(double x, double y) {
+        // Y sınırları (hard constraint)
+        double newY = Math.max(LEFT_CORRIDOR_Y_MIN, Math.min(y, LEFT_CORRIDOR_Y_MAX));
+        
+        // X için soft constraint - merkeze doğru çek
+        double newX;
+        if (x < LEFT_CORRIDOR_X_MIN) {
+            double overflow = LEFT_CORRIDOR_X_MIN - x;
+            newX = LEFT_CORRIDOR_X_MIN + overflow * (1 - SOFT_CONSTRAINT_STRENGTH);
+            newX = Math.max(newX, LEFT_CORRIDOR_X_MIN);
+        } else if (x > LEFT_CORRIDOR_X_MAX) {
+            double overflow = x - LEFT_CORRIDOR_X_MAX;
+            newX = LEFT_CORRIDOR_X_MAX - overflow * (1 - SOFT_CONSTRAINT_STRENGTH);
+            newX = Math.min(newX, LEFT_CORRIDOR_X_MAX);
+        } else {
+            newX = x;
+        }
+        
+        // Merkeze doğru yumuşak çekme
+        double centerPull = 0.2;
+        newX = newX + (LEFT_CORRIDOR_CENTER_X - newX) * centerPull;
+        
+        if (Math.abs(newX - x) > 1) {
+            System.out.println("[Trilateration] Soft constraint (sol koridor): x=" + 
+                (int)x + " -> " + (int)newX);
+        }
+        
+        return new Point(newX, newY);
+    }
+    
+    /**
+     * Ana koridora yakın mı? (genişletilmiş sınırlar)
+     */
+    private boolean isNearMainCorridor(double x, double y) {
+        double margin = 100; // 100 piksel tolerans
+        return x >= MAIN_CORRIDOR_X_MIN - margin && x <= MAIN_CORRIDOR_X_MAX + margin &&
+               y >= MAIN_CORRIDOR_Y_MIN - margin && y <= MAIN_CORRIDOR_Y_MAX + margin;
+    }
+    
+    /**
+     * Sol koridora yakın mı?
+     */
+    private boolean isNearLeftCorridor(double x, double y) {
+        double margin = 100;
+        return x >= LEFT_CORRIDOR_X_MIN - margin && x <= LEFT_CORRIDOR_X_MAX + margin &&
+               y >= LEFT_CORRIDOR_Y_MIN - margin && y <= LEFT_CORRIDOR_Y_MAX + margin;
     }
 
     /**
