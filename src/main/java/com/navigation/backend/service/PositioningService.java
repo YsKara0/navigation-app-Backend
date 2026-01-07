@@ -83,20 +83,35 @@ public class PositioningService {
      * Varsayılan modla konum hesaplar
      */
     public PositioningResult calculateLocation(List<Map<String, Object>> beaconReadings) {
-        return calculateLocation(beaconReadings, defaultMode, DEFAULT_USER);
+        return calculateLocation(beaconReadings, defaultMode, DEFAULT_USER, false);
     }
 
     /**
      * Belirtilen modla konum hesaplar (varsayılan kullanıcı)
      */
     public PositioningResult calculateLocation(List<Map<String, Object>> beaconReadings, PositioningMode mode) {
-        return calculateLocation(beaconReadings, mode, DEFAULT_USER);
+        return calculateLocation(beaconReadings, mode, DEFAULT_USER, false);
+    }
+    
+    /**
+     * Belirtilen mod ve navigation mode ile konum hesaplar
+     */
+    public PositioningResult calculateLocation(List<Map<String, Object>> beaconReadings, PositioningMode mode, boolean navigationMode) {
+        return calculateLocation(beaconReadings, mode, DEFAULT_USER, navigationMode);
     }
 
     /**
-     * Belirtilen mod ve kullanıcı için konum hesaplar
+     * Belirtilen mod ve kullanıcı için konum hesaplar (eski uyumluluk için)
      */
     public PositioningResult calculateLocation(List<Map<String, Object>> beaconReadings, PositioningMode mode, String userId) {
+        return calculateLocation(beaconReadings, mode, userId, false);
+    }
+    
+    /**
+     * Belirtilen mod, kullanıcı ve navigation mode için konum hesaplar
+     * @param navigationMode Mobile'dan gelen explicit navigation mode flag'i
+     */
+    public PositioningResult calculateLocation(List<Map<String, Object>> beaconReadings, PositioningMode mode, String userId, boolean navigationMode) {
         if (beaconReadings == null || beaconReadings.isEmpty()) {
             return PositioningResult.empty("Beacon verisi yok");
         }
@@ -123,7 +138,9 @@ public class PositioningService {
 
         // Smoothing ve Snap to Route uygula
         if (rawResult.isValid()) {
-            PositioningResult smoothedResult = applySmoothingAndSpeedLimit(rawResult, userId);
+            // Explicit navigation mode VEYA aktif rota varsa navigation parametreleri kullan
+            boolean useNavigationParams = navigationMode || (userActiveRoutes.containsKey(userId) && !userActiveRoutes.get(userId).isEmpty());
+            PositioningResult smoothedResult = applySmoothingAndSpeedLimit(rawResult, userId, useNavigationParams);
             
             // Aktif rota varsa ve snap to route açıksa, konumu rotaya kilitle
             if (snapToRouteEnabled && userActiveRoutes.containsKey(userId)) {
@@ -250,15 +267,22 @@ public class PositioningService {
     
     /**
      * Konum değişikliklerini yumuşatır ve maksimum hız sınırı uygular
+     * Eski metod - uyumluluk için
      */
     private PositioningResult applySmoothingAndSpeedLimit(PositioningResult rawResult, String userId) {
+        boolean isNavigationMode = userActiveRoutes.containsKey(userId) && !userActiveRoutes.get(userId).isEmpty();
+        return applySmoothingAndSpeedLimit(rawResult, userId, isNavigationMode);
+    }
+    
+    /**
+     * Konum değişikliklerini yumuşatır ve maksimum hız sınırı uygular
+     * @param isNavigationMode Explicit navigation mode flag - mobile'dan veya rota varlığından
+     */
+    private PositioningResult applySmoothingAndSpeedLimit(PositioningResult rawResult, String userId, boolean isNavigationMode) {
         LocationState state = userLocationStates.computeIfAbsent(userId, k -> new LocationState());
         
         Point rawLocation = rawResult.getLocation();
         long currentTime = System.currentTimeMillis();
-        
-        // Navigasyon modu aktif mi? (rota var mı?)
-        boolean isNavigationMode = userActiveRoutes.containsKey(userId) && !userActiveRoutes.get(userId).isEmpty();
         
         // Navigasyon moduna göre parametreler seç
         double minMovementThreshold = isNavigationMode ? NAV_MIN_MOVEMENT_THRESHOLD : MIN_MOVEMENT_THRESHOLD;

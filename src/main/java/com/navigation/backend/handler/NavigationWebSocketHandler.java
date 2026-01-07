@@ -101,6 +101,9 @@ public class NavigationWebSocketHandler extends TextWebSocketHandler {
      */
     @SuppressWarnings("unchecked")
     private void handleLocationRequest(WebSocketSession session, Map<String, Object> data) throws Exception {
+        // İşleme süresini ölçmeye başla
+        long startTime = System.currentTimeMillis();
+        
         if (!data.containsKey("beacons")) {
             sendError(session, "Beacon verisi eksik");
             return;
@@ -123,9 +126,24 @@ public class NavigationWebSocketHandler extends TextWebSocketHandler {
                 // Geçersiz mod, varsayılanı kullan
             }
         }
+        
+        // Navigation mode'u al (mobile'dan gelen explicit flag)
+        boolean navigationMode = false;
+        if (data.containsKey("navigationMode")) {
+            Object navModeObj = data.get("navigationMode");
+            if (navModeObj instanceof Boolean) {
+                navigationMode = (Boolean) navModeObj;
+            } else if (navModeObj instanceof String) {
+                navigationMode = "true".equalsIgnoreCase((String) navModeObj);
+            }
+        }
+        
+        if (navigationMode) {
+            System.out.println("[WebSocket] Navigation Mode AKTIF - Hızlı konum güncellemesi");
+        }
 
-        // KONUM HESAPLAMA
-        PositioningResult result = positioningService.calculateLocation(beaconReadings, mode);
+        // KONUM HESAPLAMA (navigation mode ile)
+        PositioningResult result = positioningService.calculateLocation(beaconReadings, mode, navigationMode);
 
         if (!result.isValid()) {
             // Daha detaylı hata mesajı
@@ -171,6 +189,9 @@ public class NavigationWebSocketHandler extends TextWebSocketHandler {
         response.put("nearestRoom", result.getNearestRoom());
         response.put("estimatedDistance", result.getEstimatedDistance());
         
+        // Navigation mode bilgisi (debug için)
+        response.put("navigationMode", navigationMode);
+        
         // ROTA HESAPLAMA
         if (targetDestination != null && !targetDestination.isEmpty()) {
             try {
@@ -190,6 +211,10 @@ public class NavigationWebSocketHandler extends TextWebSocketHandler {
             // Hedef yoksa aktif rotayı temizle
             positioningService.clearActiveRoute(session.getId());
         }
+        
+        // İşleme süresini hesapla ve response'a ekle (ms cinsinden)
+        long processingTime = System.currentTimeMillis() - startTime;
+        response.put("processingTime", processingTime);
 
         // MOBILE GERI GÖNDER
         String jsonResponse = objectMapper.writeValueAsString(response);
