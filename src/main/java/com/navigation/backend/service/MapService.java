@@ -32,25 +32,25 @@ public class MapService {
             // Gerçek RTLS Beacon MAC adresleri ve konumları (18 px/m)
             // Format: MAC adresi, X (piksel), Y (piksel)
             
-            // Ana koridor - güney duvarı (y=255)
-            beaconRepository.save(new Beacon("72:9C:87:72:92:08", 1430, 255));  // Beacon 1
-            beaconRepository.save(new Beacon("AE:9A:87:72:92:08", 1310, 255));  // Beacon 2
-            beaconRepository.save(new Beacon("7A:8E:87:72:92:08", 1175, 255));  // Beacon 3
-            beaconRepository.save(new Beacon("96:9C:87:72:92:08", 1010, 255));   // Beacon 5
-            beaconRepository.save(new Beacon("86:9C:87:72:92:08", 870, 255));   // Beacon 7
-            beaconRepository.save(new Beacon("E6:8F:87:72:92:08", 490, 255));  // Beacon 8
-            beaconRepository.save(new Beacon("CE:8F:87:72:92:08", 360, 255));   // Beacon 11
-            // Ana koridor - kuzey duvarı (y=195)
-            beaconRepository.save(new Beacon("CA:8F:87:72:92:08", 1160, 195));  // Beacon 4
-            beaconRepository.save(new Beacon("36:9B:87:72:92:08", 1000, 195));   // Beacon 6
-            beaconRepository.save(new Beacon("66:0A:84:72:92:08", 630, 195));  // Beacon 9
-            beaconRepository.save(new Beacon("1A:8F:87:72:92:08", 370, 195));   // Beacon 10
-            beaconRepository.save(new Beacon("0E:9B:87:72:92:08", 250, 195));   // Beacon 12
+            // Ana koridor - güney duvarı
+            beaconRepository.save(new Beacon("72:9C:87:72:92:08", 789, 184));  // Beacon 1
+            beaconRepository.save(new Beacon("AE:9A:87:72:92:08", 758, 262));  // Beacon 2
+            beaconRepository.save(new Beacon("7A:8E:87:72:92:08", 600, 266));  // Beacon 3
+            beaconRepository.save(new Beacon("96:9C:87:72:92:08", 966, 266));   // Beacon 5
+            beaconRepository.save(new Beacon("86:9C:87:72:92:08", 871, 263));   // Beacon 7
+            beaconRepository.save(new Beacon("E6:8F:87:72:92:08", 452, 265));  // Beacon 8
+            beaconRepository.save(new Beacon("CE:8F:87:72:92:08", 329, 262));   // Beacon 11
+            // Ana koridor - kuzey duvarı
+            beaconRepository.save(new Beacon("CA:8F:87:72:92:08", 1143, 264));  // Beacon 4
+            beaconRepository.save(new Beacon("36:9B:87:72:92:08", 1085, 183));   // Beacon 6
+            beaconRepository.save(new Beacon("66:0A:84:72:92:08", 657, 184));  // Beacon 9
+            beaconRepository.save(new Beacon("1A:8F:87:72:92:08", 405, 187));   // Beacon 10
+            beaconRepository.save(new Beacon("0E:9B:87:72:92:08", 232, 185));   // Beacon 12
             
             // Sol koridor
-            beaconRepository.save(new Beacon("D6:8D:87:72:92:08", 230, 280));   // Beacon 13
-            beaconRepository.save(new Beacon("06:8E:87:72:92:08", 260, 500));   // Beacon 14
-            beaconRepository.save(new Beacon("72:9A:87:72:92:08", 230, 620));   // Beacon 15
+            beaconRepository.save(new Beacon("D6:8D:87:72:92:08", 198, 232));   // Beacon 13
+            beaconRepository.save(new Beacon("06:8E:87:72:92:08", 198, 329));   // Beacon 14
+            beaconRepository.save(new Beacon("72:9A:87:72:92:08", 527, 186));   // Beacon 15
             
             System.out.println("15 beacon yuklendi (MAC adresleriyle).");
         }
@@ -61,10 +61,10 @@ public class MapService {
 
     private void initBeaconRoomMapping() {
         // Her beacon MAC adresi için en yakın oda
-        beaconToRoomMap.put("72:9C:87:72:92:08", "149");  // Beacon 1
-        beaconToRoomMap.put("AE:9A:87:72:92:08", "148");  // Beacon 2
-        beaconToRoomMap.put("7A:8E:87:72:92:08", "147");  // Beacon 3
-        beaconToRoomMap.put("CA:8F:87:72:92:08", "155");  // Beacon 4
+        beaconToRoomMap.put("72:9C:87:72:92:08", "157");  // Beacon 1
+        beaconToRoomMap.put("AE:9A:87:72:92:08", "144");  // Beacon 2
+        beaconToRoomMap.put("7A:8E:87:72:92:08", "143");  // Beacon 3
+        beaconToRoomMap.put("CA:8F:87:72:92:08", "147");  // Beacon 4
         beaconToRoomMap.put("96:9C:87:72:92:08", "146");  // Beacon 5
         beaconToRoomMap.put("36:9B:87:72:92:08", "156");  // Beacon 6
         beaconToRoomMap.put("86:9C:87:72:92:08", "145");  // Beacon 7
@@ -75,7 +75,7 @@ public class MapService {
         beaconToRoomMap.put("0E:9B:87:72:92:08", "161");  // Beacon 12
         beaconToRoomMap.put("D6:8D:87:72:92:08", "yemekhane");  // Beacon 13
         beaconToRoomMap.put("06:8E:87:72:92:08", "139");  // Beacon 14
-        beaconToRoomMap.put("72:9A:87:72:92:08", "120");  // Beacon 15
+        beaconToRoomMap.put("72:9A:87:72:92:08", "159");  // Beacon 15
     }
 
     public Beacon getBeacon(String uuid) {

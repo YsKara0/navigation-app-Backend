@@ -17,8 +17,8 @@
       .room-number { font-family: Arial, sans-serif; }
     </style>
   </defs>
-  <rect width="2000" height="800" fill="#f0f2f5" x="0.172" y="-0.164"/>
-  <rect id="corridor-main" data-type="corridor" data-name="Ana Koridor" x="200" y="180" width="1450.58" height="90" class="corridor" fill="#ffffff" style=""/>
+  <rect width="2000" height="800" fill="#f0f2f5" x="-2.354" y="-14.055"/>
+  <rect id="corridor-main" data-type="corridor" data-name="Ana Koridor" x="198.246" y="180" width="1450.58" height="90" class="corridor" fill="#ffffff" style=""/>
   <rect id="corridor-left" data-type="corridor" data-name="Sol Koridor" x="200" y="270" width="90" height="430" class="corridor" fill="#ffffff"/>
   <g stroke="#2c3e50" stroke-width="4" fill="none" style="" transform="matrix(0.936001, -0.000008, 0, 1, 12.799901, 0.00896)">
     <line x1="200" y1="180" x2="1750" y2="180"/>
@@ -33,31 +33,31 @@
     <text x="250" y="100" text-anchor="middle" font-size="14" fill="#1b5e20" font-weight="bold" style="white-space: pre;">TTO</text>
     <text x="250" y="118" text-anchor="middle" font-size="12" fill="#1b5e20" style="white-space: pre;">Ofisi</text>
     <text x="250" y="140" text-anchor="middle" font-size="11" fill="#1b5e20" style="white-space: pre;">161</text>
-    <rect x="230" y="165" width="40" height="20" class="door"/>
+    <rect x="211.383" y="163.966" width="40" height="20" class="door"/>
   </g>
   <g id="room-160" data-room-id="160" data-room-name="Derslik" data-type="classroom">
     <rect x="310" y="40" width="120" height="140" class="room classroom"/>
     <text x="370" y="100" text-anchor="middle" font-size="14" fill="#37474f" font-weight="bold" style="white-space: pre;">DERSLİK</text>
     <text x="370" y="120" text-anchor="middle" font-size="12" fill="#37474f" style="white-space: pre;">160</text>
-    <rect x="350" y="165" width="40" height="20" class="door"/>
+    <rect x="383.818" y="165" width="40" height="20" class="door"/>
   </g>
   <g id="room-159" data-room-id="159" data-room-name="Derslik" data-type="classroom">
     <rect x="440" y="40" width="120" height="140" class="room classroom"/>
     <text x="500" y="100" text-anchor="middle" font-size="14" fill="#37474f" font-weight="bold" style="white-space: pre;">DERSLİK</text>
     <text x="500" y="120" text-anchor="middle" font-size="12" fill="#37474f" style="white-space: pre;">159</text>
-    <rect x="480" y="165" width="40" height="20" class="door"/>
+    <rect x="508.059" y="165" width="40" height="20" class="door"/>
   </g>
   <g id="room-158" data-room-id="158" data-room-name="Derslik" data-type="classroom">
     <rect x="570" y="40" width="120" height="140" class="room classroom"/>
     <text x="630" y="100" text-anchor="middle" font-size="14" fill="#37474f" font-weight="bold" style="white-space: pre;">DERSLİK</text>
     <text x="630" y="120" text-anchor="middle" font-size="12" fill="#37474f" style="white-space: pre;">158</text>
-    <rect x="610" y="165" width="40" height="20" class="door"/>
+    <rect x="638.268" y="164.513" width="40" height="20" class="door"/>
   </g>
   <g id="room-157" data-room-id="157" data-room-name="Derslik" data-type="classroom">
     <rect x="700" y="40" width="120" height="140" class="room classroom"/>
     <text x="760" y="100" text-anchor="middle" font-size="14" fill="#37474f" font-weight="bold" style="white-space: pre;">DERSLİK</text>
     <text x="760" y="120" text-anchor="middle" font-size="12" fill="#37474f" style="white-space: pre;">157</text>
-    <rect x="740" y="165" width="40" height="20" class="door"/>
+    <rect x="770.776" y="165.32" width="40" height="20" class="door"/>
   </g>
   <g id="stairs-1" data-type="stairs" data-name="Merdiven 1">
     <rect x="830" y="40" width="80" height="140" class="room stairs"/>
@@ -72,20 +72,20 @@
       <line x1="840" y1="160" x2="900" y2="160"/>
     </g>
   </g>
-  <g id="room-156" data-room-id="156" data-room-name="Kimya Lab" data-type="lab">
+  <g id="room-156" data-room-id="156" data-room-name="Kimya Lab" data-type="lab" style="" transform="matrix(1.276164, 0, 0, 1, -254.070259, 0)">
     <rect x="920" y="40" width="160" height="140" class="room lab"/>
     <text x="1000" y="95" text-anchor="middle" font-size="14" fill="#00695c" font-weight="bold" style="white-space: pre;">KİMYA LAB.</text>
     <text x="1000" y="115" text-anchor="middle" font-size="12" fill="#00695c" style="white-space: pre;">156</text>
-    <rect x="980" y="165" width="40" height="20" class="door"/>
+    <rect x="1030.83" y="164.06" width="40" height="20" class="door"/>
   </g>
-  <g id="room-155" data-room-id="155" data-room-name="Modelleme Opt. Lab" data-type="lab">
+  <g id="room-155" data-room-id="155" data-room-name="Modelleme Opt. Lab" data-type="lab" style="" transform="matrix(0.848443, 0, 0, 1, 208.02262, 0)">
     <rect x="1090" y="40" width="140" height="140" class="room lab"/>
     <text x="1160" y="85" text-anchor="middle" font-size="12" fill="#00695c" font-weight="bold" style="white-space: pre;">MODELLEME</text>
     <text x="1160" y="100" text-anchor="middle" font-size="12" fill="#00695c" font-weight="bold" style="white-space: pre;">OPT. LAB</text>
     <text x="1160" y="120" text-anchor="middle" font-size="11" fill="#00695c" style="white-space: pre;">155</text>
-    <rect x="1140" y="165" width="40" height="20" class="door"/>
+    <rect x="1184.48" y="164.546" width="40" height="20" class="door"/>
   </g>
-  <g id="wc-1" data-room-id="WC1" data-room-name="WC" data-type="wc">
+  <g id="wc-1" data-room-id="WC1" data-room-name="WC" data-type="wc" style="" transform="matrix(0.681378, 0, 0, 1, 417.394788, 0)">
     <rect x="1240" y="40" width="70" height="140" class="room" fill="#eeeeee" stroke="#bdbdbd"/>
     <text x="1275" y="110" text-anchor="middle" font-size="16" fill="#616161" font-weight="bold" style="white-space: pre;">WC</text>
   </g>
@@ -103,31 +103,31 @@
     <text x="1540" y="122" text-anchor="middle" font-size="11" fill="#004d40" style="white-space: pre;">131-1</text>
     <rect x="1520" y="165" width="40" height="20" class="door"/>
   </g>
-  <g id="room-141" data-room-id="141" data-room-name="Areli İletişim USAM" data-type="office">
+  <g id="room-141" data-room-id="141" data-room-name="Areli İletişim USAM" data-type="office" style="" transform="matrix(0.945128, 0, 0, 1, 16.461724, 0)">
     <rect x="300" y="270" width="120" height="150" class="room office"/>
     <text x="360" y="320" text-anchor="middle" font-size="11" fill="#1b5e20" font-weight="bold" style="white-space: pre;">ARELİ</text>
     <text x="360" y="335" text-anchor="middle" font-size="11" fill="#1b5e20" font-weight="bold" style="white-space: pre;">İLETİŞİM</text>
     <text x="360" y="350" text-anchor="middle" font-size="11" fill="#1b5e20" font-weight="bold" style="white-space: pre;">USAM</text>
     <text x="360" y="370" text-anchor="middle" font-size="10" fill="#1b5e20" style="white-space: pre;">141-1</text>
-    <rect x="340" y="270" width="40" height="15" class="door"/>
+    <rect x="311.137" y="269.53" width="40" height="15" class="door"/>
   </g>
-  <g id="room-142" data-room-id="142" data-room-name="Derslik" data-type="classroom">
+  <g id="room-142" data-room-id="142" data-room-name="Derslik" data-type="classroom" style="" transform="matrix(1.039195, 0, 0, 1, -21.557301, 0)">
     <rect x="430" y="270" width="120" height="150" class="room classroom"/>
     <text x="490" y="335" text-anchor="middle" font-size="14" fill="#37474f" font-weight="bold" style="white-space: pre;">DERSLİK</text>
     <text x="490" y="355" text-anchor="middle" font-size="12" fill="#37474f" style="white-space: pre;">142</text>
-    <rect x="470" y="270" width="40" height="15" class="door"/>
+    <rect x="438.018" y="270.585" width="40" height="15" class="door"/>
   </g>
   <g id="room-143" data-room-id="143" data-room-name="Derslik" data-type="classroom">
     <rect x="560" y="270" width="120" height="150" class="room classroom"/>
     <text x="620" y="335" text-anchor="middle" font-size="14" fill="#37474f" font-weight="bold" style="white-space: pre;">DERSLİK</text>
     <text x="620" y="355" text-anchor="middle" font-size="12" fill="#37474f" style="white-space: pre;">143</text>
-    <rect x="600" y="270" width="40" height="15" class="door"/>
+    <rect x="581.294" y="270" width="40" height="15" class="door" style=""/>
   </g>
-  <g id="room-144" data-room-id="144" data-room-name="Derslik" data-type="classroom">
+  <g id="room-144" data-room-id="144" data-room-name="Derslik" data-type="classroom" transform="matrix(1, 0, 0, 1, 0, -1.265306)">
     <rect x="690" y="270" width="120" height="150" class="room classroom"/>
     <text x="750" y="335" text-anchor="middle" font-size="14" fill="#37474f" font-weight="bold" style="white-space: pre;">DERSLİK</text>
     <text x="750" y="355" text-anchor="middle" font-size="12" fill="#37474f" style="white-space: pre;">144</text>
-    <rect x="730" y="270" width="40" height="15" class="door"/>
+    <rect x="704.061" y="270" width="40" height="15" class="door"/>
   </g>
   <g id="room-145" data-room-id="145" data-room-name="Müh. Öğr. Çal. Ofisi" data-type="office">
     <rect x="820" y="270" width="100" height="150" class="room classroom"/>
@@ -136,18 +136,18 @@
     <text x="870" y="360" text-anchor="middle" font-size="10" fill="#263238" style="white-space: pre;">145</text>
     <rect x="850" y="270" width="40" height="15" class="door"/>
   </g>
-  <g id="room-146" data-room-id="146" data-room-name="Fizik Lab" data-type="lab">
+  <g id="room-146" data-room-id="146" data-room-name="Fizik Lab" data-type="lab" style="" transform="matrix(1.035869, 0, 0, 1, -33.35912, 0)">
     <rect x="930" y="270" width="160" height="150" class="room lab"/>
     <text x="1010" y="335" text-anchor="middle" font-size="14" fill="#00695c" font-weight="bold" style="white-space: pre;">FİZİK LAB.</text>
     <text x="1010" y="360" text-anchor="middle" font-size="12" fill="#00695c" style="white-space: pre;">146</text>
-    <rect x="990" y="270" width="40" height="15" class="door"/>
+    <rect x="944.751" y="270" width="40" height="15" class="door"/>
   </g>
-  <g id="room-147" data-room-id="147" data-room-name="Büyük Veri ve IoT Lab" data-type="lab">
+  <g id="room-147" data-room-id="147" data-room-name="Büyük Veri ve IoT Lab" data-type="lab" style="" transform="matrix(0.965133, 0, 0, 1, 43.583467, 0)">
     <rect x="1100" y="270" width="150" height="150" class="room lab"/>
     <text x="1175" y="325" text-anchor="middle" font-size="11" fill="#00695c" font-weight="bold" style="white-space: pre;">BÜYÜK VERİ</text>
     <text x="1175" y="342" text-anchor="middle" font-size="11" fill="#00695c" font-weight="bold" style="white-space: pre;">VE IOT LAB</text>
     <text x="1175" y="365" text-anchor="middle" font-size="11" fill="#00695c" style="white-space: pre;">147</text>
-    <rect x="1155" y="270" width="40" height="15" class="door"/>
+    <rect x="1120.34" y="270.697" width="40" height="15" class="door"/>
   </g>
   <g id="room-148" data-room-id="148" data-room-name="Araştırma Görev Girişi" data-type="office">
     <rect x="1260" y="270" width="100" height="150" class="room classroom"/>
@@ -209,65 +209,65 @@
     <text x="245" y="700" text-anchor="middle" font-size="12" fill="#1565c0" font-weight="bold" style="white-space: pre;">GİRİŞ</text>
     <path d="M 205 710 L 215 680 M 225 710 L 235 680 M 245 710 L 255 680 M 265 710 L 275 680" stroke="#2196f3" stroke-width="1" opacity="0.5"/>
   </g>
-  <g id="beacon-B1" data-beacon-id="B1" data-x="1430" data-y="255" data-nearest-room="149">
-    <rect x="1418" y="243" width="25" height="25" class="beacon"/>
-    <text x="1430" y="261" text-anchor="middle" class="beacon-label" style="white-space: pre;">B1</text>
+  <g id="beacon-B1" data-beacon-id="B1" data-x="789" data-y="184" data-nearest-room="157">
+    <rect x="777" y="172" width="25" height="25" class="beacon"/>
+    <text x="789" y="190" text-anchor="middle" class="beacon-label" style="white-space: pre;">B1</text>
   </g>
-  <g id="beacon-B2" data-beacon-id="B2" data-x="1310" data-y="255" data-nearest-room="148">
-    <rect x="1298" y="243" width="25" height="25" class="beacon"/>
-    <text x="1310" y="261" text-anchor="middle" class="beacon-label" style="white-space: pre;">B2</text>
+  <g id="beacon-B2" data-beacon-id="B2" data-x="758" data-y="262" data-nearest-room="144" transform="matrix(1, 0, 0, 1, -34.381391, 3.223259)">
+    <rect x="746" y="250" width="25" height="25" class="beacon"/>
+    <text x="758" y="268" text-anchor="middle" class="beacon-label" style="white-space: pre;">B2</text>
   </g>
-  <g id="beacon-B3" data-beacon-id="B3" data-x="1175" data-y="255" data-nearest-room="147">
-    <rect x="1163" y="243" width="25" height="25" class="beacon"/>
-    <text x="1175" y="261" text-anchor="middle" class="beacon-label" style="white-space: pre;">B3</text>
+  <g id="beacon-B3" data-beacon-id="B3" data-x="600" data-y="266" data-nearest-room="143">
+    <rect x="588" y="254" width="25" height="25" class="beacon"/>
+    <text x="600" y="272" text-anchor="middle" class="beacon-label" style="white-space: pre;">B3</text>
   </g>
-  <g id="beacon-B4" data-beacon-id="B4" data-x="1160" data-y="195" data-nearest-room="155">
-    <rect x="1148" y="183" width="25" height="25" class="beacon"/>
-    <text x="1160" y="201" text-anchor="middle" class="beacon-label" style="white-space: pre;">B4</text>
+  <g id="beacon-B4" data-beacon-id="B4" data-x="1143" data-y="264" data-nearest-room="147">
+    <rect x="1131" y="252" width="25" height="25" class="beacon"/>
+    <text x="1143" y="270" text-anchor="middle" class="beacon-label" style="white-space: pre;">B4</text>
   </g>
-  <g id="beacon-B5" data-beacon-id="B5" data-x="1010" data-y="255" data-nearest-room="146">
-    <rect x="998" y="243" width="25" height="25" class="beacon"/>
-    <text x="1010" y="261" text-anchor="middle" class="beacon-label" style="white-space: pre;">B5</text>
+  <g id="beacon-B5" data-beacon-id="B5" data-x="966" data-y="266" data-nearest-room="146">
+    <rect x="954" y="254" width="25" height="25" class="beacon"/>
+    <text x="966" y="272" text-anchor="middle" class="beacon-label" style="white-space: pre;">B5</text>
   </g>
-  <g id="beacon-B6" data-beacon-id="B6" data-x="1000" data-y="195" data-nearest-room="156">
-    <rect x="988" y="183" width="25" height="25" class="beacon"/>
-    <text x="1000" y="201" text-anchor="middle" class="beacon-label" style="white-space: pre;">B6</text>
+  <g id="beacon-B6" data-beacon-id="B6" data-x="1085" data-y="183" data-nearest-room="156">
+    <rect x="1073" y="171" width="25" height="25" class="beacon"/>
+    <text x="1085" y="189" text-anchor="middle" class="beacon-label" style="white-space: pre;">B6</text>
   </g>
-  <g id="beacon-B7" data-beacon-id="B7" data-x="870" data-y="255" data-nearest-room="145">
-    <rect x="858" y="243" width="25" height="25" class="beacon"/>
-    <text x="870" y="261" text-anchor="middle" class="beacon-label" style="white-space: pre;">B7</text>
+  <g id="beacon-B7" data-beacon-id="B7" data-x="871" data-y="263" data-nearest-room="145">
+    <rect x="859" y="251" width="25" height="25" class="beacon"/>
+    <text x="871" y="269" text-anchor="middle" class="beacon-label" style="white-space: pre;">B7</text>
   </g>
-  <g id="beacon-B8" data-beacon-id="B8" data-x="490" data-y="255" data-nearest-room="142">
-    <rect x="478" y="243" width="25" height="25" class="beacon"/>
-    <text x="490" y="261" text-anchor="middle" class="beacon-label" style="white-space: pre;">B8</text>
+  <g id="beacon-B8" data-beacon-id="B8" data-x="452" data-y="265" data-nearest-room="142">
+    <rect x="440" y="253" width="25" height="25" class="beacon"/>
+    <text x="452" y="271" text-anchor="middle" class="beacon-label" style="white-space: pre;">B8</text>
   </g>
-  <g id="beacon-B9" data-beacon-id="B9" data-x="630" data-y="195" data-nearest-room="158">
-    <rect x="618" y="183" width="25" height="25" class="beacon"/>
-    <text x="630" y="201" text-anchor="middle" class="beacon-label" style="white-space: pre;">B9</text>
+  <g id="beacon-B9" data-beacon-id="B9" data-x="657" data-y="184" data-nearest-room="158">
+    <rect x="645" y="172" width="25" height="25" class="beacon"/>
+    <text x="657" y="190" text-anchor="middle" class="beacon-label" style="white-space: pre;">B9</text>
   </g>
-  <g id="beacon-B10" data-beacon-id="B10" data-x="370" data-y="195" data-nearest-room="160">
-    <rect x="358" y="183" width="25" height="25" class="beacon"/>
-    <text x="370" y="201" text-anchor="middle" class="beacon-label" style="white-space: pre;">B10</text>
+  <g id="beacon-B10" data-beacon-id="B10" data-x="405" data-y="187" data-nearest-room="160">
+    <rect x="393" y="175" width="25" height="25" class="beacon"/>
+    <text x="405" y="193" text-anchor="middle" class="beacon-label" style="white-space: pre;">B10</text>
   </g>
-  <g id="beacon-B11" data-beacon-id="B11" data-x="360" data-y="255" data-nearest-room="141">
-    <rect x="348" y="243" width="25" height="25" class="beacon"/>
-    <text x="360" y="261" text-anchor="middle" class="beacon-label" style="white-space: pre;">B11</text>
+  <g id="beacon-B11" data-beacon-id="B11" data-x="329" data-y="262" data-nearest-room="141">
+    <rect x="317" y="250" width="25" height="25" class="beacon"/>
+    <text x="329" y="268" text-anchor="middle" class="beacon-label" style="white-space: pre;">B11</text>
   </g>
-  <g id="beacon-B12" data-beacon-id="B12" data-x="250" data-y="195" data-nearest-room="161" transform="matrix(1, 0, 0, 1, 0, -3.921107)">
-    <rect x="238" y="183" width="25" height="25" class="beacon"/>
-    <text x="250" y="201" text-anchor="middle" class="beacon-label" style="white-space: pre;">B12</text>
+  <g id="beacon-B12" data-beacon-id="B12" data-x="232" data-y="185" data-nearest-room="161">
+    <rect x="220" y="173" width="25" height="25" class="beacon"/>
+    <text x="232" y="191" text-anchor="middle" class="beacon-label" style="white-space: pre;">B12</text>
   </g>
-  <g id="beacon-B13" data-beacon-id="B13" data-x="230" data-y="280" data-nearest-room="WC-BAY" transform="matrix(1, 0, 0, 1, -31.798566, -48.151763)">
-    <rect x="218" y="268" width="25" height="25" class="beacon"/>
-    <text x="230" y="286" text-anchor="middle" class="beacon-label" style="white-space: pre;">B13</text>
+  <g id="beacon-B13" data-beacon-id="B13" data-x="198" data-y="232" data-nearest-room="yemekhane">
+    <rect x="186" y="220" width="25" height="25" class="beacon"/>
+    <text x="198" y="238" text-anchor="middle" class="beacon-label" style="white-space: pre;">B13</text>
   </g>
-  <g id="beacon-B14" data-beacon-id="B14" data-x="260" data-y="500" data-nearest-room="120" transform="matrix(1, 0, 0, 1, -53.603294, 39.066505)">
-    <rect x="248" y="488" width="25" height="25" class="beacon"/>
-    <text x="260" y="506" text-anchor="middle" class="beacon-label" style="white-space: pre;">B14</text>
+  <g id="beacon-B14" data-beacon-id="B14" data-x="198" data-y="329" data-nearest-room="139">
+    <rect x="186" y="317" width="25" height="25" class="beacon"/>
+    <text x="198" y="335" text-anchor="middle" class="beacon-label" style="white-space: pre;">B14</text>
   </g>
-  <g id="beacon-B15" data-beacon-id="B15" data-x="230" data-y="620" data-nearest-room="entrance" transform="matrix(1, 0, 0, 1, 48.360805, -121.554724)">
-    <rect x="218" y="608" width="25" height="25" class="beacon"/>
-    <text x="230" y="626" text-anchor="middle" class="beacon-label" style="white-space: pre;">B15</text>
+  <g id="beacon-B15" data-beacon-id="B15" data-x="527" data-y="186" data-nearest-room="159">
+    <rect x="515" y="174" width="25" height="25" class="beacon"/>
+    <text x="527" y="192" text-anchor="middle" class="beacon-label" style="white-space: pre;">B15</text>
   </g>
   <g id="scale-bar" transform="translate(1700, 750)">
     <line x1="0" y1="0" x2="180" y2="0" stroke="#333" stroke-width="3"/>
