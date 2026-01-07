@@ -40,20 +40,25 @@ public class PositioningService {
     private final Map<String, LocationState> userLocationStates = new ConcurrentHashMap<>();
     
     // Maksimum hareket hızı (piksel/saniye) - Hızlı yürüyüş ~2 m/s = ~36 px/s
-    private static final double MAX_SPEED_PIXELS_PER_SEC = 70.0; // Koşma dahil tolerans
+    private static final double MAX_SPEED_PIXELS_PER_SEC = 90.0; // Artırıldı - daha akıcı
     
-    // Smoothing faktörleri (0-1 arası, 1'e yakın = daha az smoothing = daha hızlı tepki)
-    private static final double SMOOTHING_FACTOR_MOVING = 0.5;  // Hareket ederken: dengeli tepki
-    private static final double SMOOTHING_FACTOR_STATIC = 0.15; // Dururken: çok stabil (titreme önleme)
+    // ===== NORMAL MOD (Rota yok - stabilite öncelikli) =====
+    private static final double SMOOTHING_FACTOR_MOVING = 0.5;  // Hareket ederken
+    private static final double SMOOTHING_FACTOR_STATIC = 0.15; // Dururken
+    
+    // ===== NAVİGASYON MODU (Rota var - hız öncelikli) =====
+    private static final double NAV_SMOOTHING_FACTOR_MOVING = 0.75; // Çok hızlı tepki
+    private static final double NAV_SMOOTHING_FACTOR_STATIC = 0.35; // Dururken bile responsive
+    private static final double NAV_MIN_MOVEMENT_THRESHOLD = 4.0;   // Daha hassas hareket algılama
     
     // Hareket algılama eşiği (bu hızın üstünde = hareket ediyor)
-    private static final double MOVEMENT_SPEED_THRESHOLD = 20.0; // px/s (~1.1 m/s)
+    private static final double MOVEMENT_SPEED_THRESHOLD = 15.0; // px/s - düşürüldü, daha erken hareket algılama
     
     // Minimum hareket eşiği - JITTER FILTER (bu kadar piksel değişmezse güncelleme yapma)
-    private static final double MIN_MOVEMENT_THRESHOLD = 8.0; // Titreme önleme
+    private static final double MIN_MOVEMENT_THRESHOLD = 6.0; // Düşürüldü - daha responsive
     
     // Jitter buffer - son N konumun ortalaması
-    private static final int JITTER_BUFFER_SIZE = 3;
+    private static final int JITTER_BUFFER_SIZE = 2; // Düşürüldü - daha az gecikme
     
     // Varsayılan kullanıcı ID'si (tek kullanıcı senaryosu için)
     private static final String DEFAULT_USER = "default";
@@ -252,25 +257,37 @@ public class PositioningService {
         Point rawLocation = rawResult.getLocation();
         long currentTime = System.currentTimeMillis();
         
+        // Navigasyon modu aktif mi? (rota var mı?)
+        boolean isNavigationMode = userActiveRoutes.containsKey(userId) && !userActiveRoutes.get(userId).isEmpty();
+        
+        // Navigasyon moduna göre parametreler seç
+        double minMovementThreshold = isNavigationMode ? NAV_MIN_MOVEMENT_THRESHOLD : MIN_MOVEMENT_THRESHOLD;
+        double smoothingMoving = isNavigationMode ? NAV_SMOOTHING_FACTOR_MOVING : SMOOTHING_FACTOR_MOVING;
+        double smoothingStatic = isNavigationMode ? NAV_SMOOTHING_FACTOR_STATIC : SMOOTHING_FACTOR_STATIC;
+        
         // İlk konum ise direkt kaydet
         if (state.lastLocation == null) {
             state.lastLocation = rawLocation;
             state.lastUpdateTime = currentTime;
+            state.addToBuffer(rawLocation);
             return rawResult;
         }
         
         // Zaman farkı (saniye)
         double deltaTime = (currentTime - state.lastUpdateTime) / 1000.0;
-        if (deltaTime < 0.1) deltaTime = 0.1; // Minimum 100ms
+        if (deltaTime < 0.05) deltaTime = 0.05; // Minimum 50ms - daha hızlı güncelleme
         
         double dx = rawLocation.getX() - state.lastLocation.getX();
         double dy = rawLocation.getY() - state.lastLocation.getY();
         double distance = Math.sqrt(dx * dx + dy * dy);
         
         // JITTER FILTER: Çok küçük hareket ise güncelleme yapma (titreme önleme)
-        if (distance < MIN_MOVEMENT_THRESHOLD) {
+        // Navigasyon modunda daha hassas
+        if (distance < minMovementThreshold) {
+            // Navigasyon modunda bile buffer'dan al ama daha az filtreleme
+            Point returnLocation = isNavigationMode ? state.lastLocation : state.getBufferedLocation();
             return new PositioningResult(
-                state.getBufferedLocation(), // Buffer'dan al - daha stabil
+                returnLocation,
                 rawResult.getMode(),
                 rawResult.getConfidence(),
                 rawResult.getNearestBeaconId(),
@@ -284,8 +301,8 @@ public class PositioningService {
         
         // Adaptif smoothing: hareket ederken hızlı tepki, dururken stabil
         double smoothingFactor = (speed > MOVEMENT_SPEED_THRESHOLD) 
-            ? SMOOTHING_FACTOR_MOVING 
-            : SMOOTHING_FACTOR_STATIC;
+            ? smoothingMoving 
+            : smoothingStatic;
         
         Point smoothedLocation;
         
@@ -299,20 +316,22 @@ public class PositioningService {
             double newY = state.lastLocation.getY() + dy * ratio;
             
             // Sonra smoothing uygula (hareket halinde = hızlı tepki)
-            smoothedLocation = applyAdaptiveSmoothing(state.lastLocation, new Point(newX, newY), SMOOTHING_FACTOR_MOVING);
-            
-            System.out.println("[PositioningService] Hız sınırı: " + 
-                String.format("%.1f -> %.1f px/s", speed, MAX_SPEED_PIXELS_PER_SEC));
+            smoothedLocation = applyAdaptiveSmoothing(state.lastLocation, new Point(newX, newY), smoothingMoving);
         } else {
             // Adaptif smoothing uygula
             smoothedLocation = applyAdaptiveSmoothing(state.lastLocation, rawLocation, smoothingFactor);
         }
         
-        // Jitter buffer'a ekle
-        state.addToBuffer(smoothedLocation);
-        
-        // Son konum olarak buffer ortalamasını kullan (ekstra stabilite)
-        Point finalLocation = state.getBufferedLocation();
+        // Navigasyon modunda jitter buffer kullanma - direkt sonucu al
+        Point finalLocation;
+        if (isNavigationMode) {
+            finalLocation = smoothedLocation;
+            state.clearBuffer(); // Buffer'ı temizle
+        } else {
+            // Normal modda jitter buffer kullan
+            state.addToBuffer(smoothedLocation);
+            finalLocation = state.getBufferedLocation();
+        }
         
         // State güncelle
         state.lastLocation = finalLocation;
@@ -561,6 +580,10 @@ public class PositioningService {
                 sumY += p.getY();
             }
             return new Point(sumX / locationBuffer.size(), sumY / locationBuffer.size());
+        }
+        
+        void clearBuffer() {
+            locationBuffer.clear();
         }
     }
 
