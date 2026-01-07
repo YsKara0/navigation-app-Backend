@@ -21,9 +21,47 @@ public class TrilaterationService {
 
     private final MapService mapService;
 
-    // RSSI-Distance dönüşüm parametreleri
-    private static final double TX_POWER = -59.0;  // 1m mesafedeki referans RSSI
-    private static final double PATH_LOSS_EXPONENT = 2.5; // İç mekan için (2.0-4.0 arası)
+    // ============== RSSI-MESAFE DÖNÜŞÜM PARAMETRELERİ ==============
+    // Bu değerler ortama göre kalibre edilebilir
+    
+    // 1 metredeki referans RSSI (beacon üreticisine göre -55 ile -65 arası)
+    private static final double TX_POWER = -59.0;
+    
+    // Temel path loss exponent (iç mekan: 2.0-4.0)
+    // Düşük değer = sinyal daha az zayıflar (açık alan)
+    // Yüksek değer = sinyal daha çok zayıflar (duvar, engel)
+    private static final double BASE_PATH_LOSS_EXPONENT = 2.2;
+    
+    // Adaptif path loss için RSSI eşikleri
+    private static final int RSSI_NEAR_THRESHOLD = -60;   // Yakın mesafe
+    private static final int RSSI_FAR_THRESHOLD = -80;    // Uzak mesafe
+    
+    // Mesafe sınırları (metre)
+    private static final double MIN_DISTANCE = 0.5;   // Minimum mesafe (çok yakın sinyaller için)
+    private static final double MAX_DISTANCE = 15.0;  // Maximum mesafe (çok zayıf sinyaller için)
+    
+    // RSSI filtreleme
+    private static final int MIN_VALID_RSSI = -90;    // Bu değerden düşük RSSI'lar dikkate alınmaz
+    
+    // Piksel/Metre oranı
+    private static final double PIXELS_PER_METER = 18.0;
+    
+    // Kalibrasyon faktörü (gerekirse ayarlanır, 1.0 = değişiklik yok)
+    // >1.0 = hesaplanan mesafeyi artır, <1.0 = azalt
+    private static final double DISTANCE_CALIBRATION_FACTOR = 1.15;
+
+    // Koridor sınırları (piksel cinsinden)
+    // Ana Koridor: yatay, x: 200-1650, y: 180-270
+    private static final double MAIN_CORRIDOR_X_MIN = 200;
+    private static final double MAIN_CORRIDOR_X_MAX = 1650;
+    private static final double MAIN_CORRIDOR_Y_MIN = 180;
+    private static final double MAIN_CORRIDOR_Y_MAX = 270;
+    
+    // Sol Koridor: dikey, x: 200-290, y: 270-700
+    private static final double LEFT_CORRIDOR_X_MIN = 200;
+    private static final double LEFT_CORRIDOR_X_MAX = 290;
+    private static final double LEFT_CORRIDOR_Y_MIN = 270;
+    private static final double LEFT_CORRIDOR_Y_MAX = 700;
 
     public TrilaterationService(MapService mapService) {
         this.mapService = mapService;
@@ -60,10 +98,92 @@ public class TrilaterationService {
             location = refineWithWeightedLeastSquares(location, readings);
         }
 
+        // Konumu koridor sınırlarına kısıtla
+        location = constrainToCorridor(location);
+
         // Güvenilirlik hesapla (0-1 arası)
         double confidence = calculateConfidence(readings);
 
         return new TrilaterationResult(location, confidence, "Başarılı");
+    }
+
+    /**
+     * Hesaplanan konumu koridor sınırlarına kısıtlar
+     * Konum oda içindeyse en yakın koridor noktasına çeker
+     */
+    private Point constrainToCorridor(Point point) {
+        if (point == null) return null;
+        
+        double x = point.getX();
+        double y = point.getY();
+        
+        // Önce hangi koridora daha yakın olduğunu belirle
+        boolean inMainCorridor = isInMainCorridor(x, y);
+        boolean inLeftCorridor = isInLeftCorridor(x, y);
+        
+        // Zaten bir koridorda ise değiştirme
+        if (inMainCorridor || inLeftCorridor) {
+            return point;
+        }
+        
+        // Koridor dışında - en yakın koridor noktasını bul
+        Point nearestMain = getNearestPointInMainCorridor(x, y);
+        Point nearestLeft = getNearestPointInLeftCorridor(x, y);
+        
+        double distToMain = distance(x, y, nearestMain.getX(), nearestMain.getY());
+        double distToLeft = distance(x, y, nearestLeft.getX(), nearestLeft.getY());
+        
+        // Daha yakın koridora çek
+        if (distToMain <= distToLeft) {
+            System.out.println("[TrilaterationService] Konum koridor dışı, ana koridora çekildi: (" + 
+                (int)x + "," + (int)y + ") -> (" + (int)nearestMain.getX() + "," + (int)nearestMain.getY() + ")");
+            return nearestMain;
+        } else {
+            System.out.println("[TrilaterationService] Konum koridor dışı, sol koridora çekildi: (" + 
+                (int)x + "," + (int)y + ") -> (" + (int)nearestLeft.getX() + "," + (int)nearestLeft.getY() + ")");
+            return nearestLeft;
+        }
+    }
+    
+    /**
+     * Nokta ana koridor içinde mi?
+     */
+    private boolean isInMainCorridor(double x, double y) {
+        return x >= MAIN_CORRIDOR_X_MIN && x <= MAIN_CORRIDOR_X_MAX &&
+               y >= MAIN_CORRIDOR_Y_MIN && y <= MAIN_CORRIDOR_Y_MAX;
+    }
+    
+    /**
+     * Nokta sol koridor içinde mi?
+     */
+    private boolean isInLeftCorridor(double x, double y) {
+        return x >= LEFT_CORRIDOR_X_MIN && x <= LEFT_CORRIDOR_X_MAX &&
+               y >= LEFT_CORRIDOR_Y_MIN && y <= LEFT_CORRIDOR_Y_MAX;
+    }
+    
+    /**
+     * Ana koridordaki en yakın noktayı bul
+     */
+    private Point getNearestPointInMainCorridor(double x, double y) {
+        double clampedX = Math.max(MAIN_CORRIDOR_X_MIN, Math.min(x, MAIN_CORRIDOR_X_MAX));
+        double clampedY = Math.max(MAIN_CORRIDOR_Y_MIN, Math.min(y, MAIN_CORRIDOR_Y_MAX));
+        return new Point(clampedX, clampedY);
+    }
+    
+    /**
+     * Sol koridordaki en yakın noktayı bul
+     */
+    private Point getNearestPointInLeftCorridor(double x, double y) {
+        double clampedX = Math.max(LEFT_CORRIDOR_X_MIN, Math.min(x, LEFT_CORRIDOR_X_MAX));
+        double clampedY = Math.max(LEFT_CORRIDOR_Y_MIN, Math.min(y, LEFT_CORRIDOR_Y_MAX));
+        return new Point(clampedX, clampedY);
+    }
+    
+    /**
+     * İki nokta arası mesafe
+     */
+    private double distance(double x1, double y1, double x2, double y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
     }
 
     /**
@@ -80,10 +200,10 @@ public class TrilaterationService {
         double x2 = b2.getX(), y2 = b2.getY();
         double x3 = b3.getX(), y3 = b3.getY();
 
-        // Mesafeleri piksele çevir (18 px/m)
-        double r1 = d1 * 18;
-        double r2 = d2 * 18;
-        double r3 = d3 * 18;
+        // Mesafeleri piksele çevir (PIXELS_PER_METER px/m)
+        double r1 = d1 * PIXELS_PER_METER;
+        double r2 = d2 * PIXELS_PER_METER;
+        double r3 = d3 * PIXELS_PER_METER;
 
         // Trilateration formülleri
         // İki denklem çözerek x ve y bulunur
@@ -138,7 +258,7 @@ public class TrilaterationService {
             for (BeaconReading reading : readings) {
                 double bx = reading.beacon.getX();
                 double by = reading.beacon.getY();
-                double expectedDist = reading.distance * 18; // metre -> piksel
+                double expectedDist = reading.distance * PIXELS_PER_METER; // metre -> piksel
 
                 double actualDist = Math.sqrt(Math.pow(x - bx, 2) + Math.pow(y - by, 2));
                 if (actualDist < 1) actualDist = 1;
@@ -178,6 +298,12 @@ public class TrilaterationService {
             Integer rssi = getIntValue(reading.get("rssi"));
 
             if (beaconId == null || rssi == null) continue;
+            
+            // Çok zayıf sinyalleri filtrele
+            if (rssi < MIN_VALID_RSSI) {
+                System.out.println("[TrilaterationService] Sinyal çok zayıf, atlandı: " + beaconId + " RSSI=" + rssi);
+                continue;
+            }
 
             // MAC adresini normalize et ve ters versiyonunu da dene
             Beacon beacon = findBeaconByMac(beaconId);
@@ -188,6 +314,8 @@ public class TrilaterationService {
 
             double distance = rssiToDistance(rssi);
             readings.add(new BeaconReading(beacon, beacon.getUuid(), rssi, distance));
+            System.out.println("[TrilaterationService] Beacon: " + beacon.getUuid() + 
+                " RSSI=" + rssi + " -> " + String.format("%.2f", distance) + "m");
         }
 
         // Mesafeye göre sırala (yakından uzağa)
@@ -236,10 +364,35 @@ public class TrilaterationService {
 
     /**
      * RSSI değerinden mesafe hesaplar (metre)
+     * Adaptif Path Loss Model kullanır
      */
     private double rssiToDistance(int rssi) {
+        // Adaptif Path Loss Exponent
+        // Yakın mesafede sinyal daha stabil, uzakta daha değişken
+        double pathLossExponent;
+        
+        if (rssi >= RSSI_NEAR_THRESHOLD) {
+            // Yakın mesafe (0-3m): Düşük path loss
+            pathLossExponent = BASE_PATH_LOSS_EXPONENT;
+        } else if (rssi >= RSSI_FAR_THRESHOLD) {
+            // Orta mesafe (3-8m): Kademeli artış
+            double ratio = (double)(RSSI_NEAR_THRESHOLD - rssi) / (RSSI_NEAR_THRESHOLD - RSSI_FAR_THRESHOLD);
+            pathLossExponent = BASE_PATH_LOSS_EXPONENT + (ratio * 0.5); // Max 2.7
+        } else {
+            // Uzak mesafe (8m+): Yüksek path loss
+            pathLossExponent = BASE_PATH_LOSS_EXPONENT + 0.8; // ~3.0
+        }
+        
         // Path Loss Model: d = 10 ^ ((TxPower - RSSI) / (10 * n))
-        return Math.pow(10, (TX_POWER - rssi) / (10 * PATH_LOSS_EXPONENT));
+        double rawDistance = Math.pow(10, (TX_POWER - rssi) / (10 * pathLossExponent));
+        
+        // Kalibrasyon faktörü uygula
+        double calibratedDistance = rawDistance * DISTANCE_CALIBRATION_FACTOR;
+        
+        // Mesafe sınırlarını uygula
+        calibratedDistance = Math.max(MIN_DISTANCE, Math.min(calibratedDistance, MAX_DISTANCE));
+        
+        return calibratedDistance;
     }
 
     /**
