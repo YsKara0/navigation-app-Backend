@@ -39,14 +39,18 @@ public class PositioningService {
     // Kullanıcı bazlı son konum bilgileri (userId -> LocationState)
     private final Map<String, LocationState> userLocationStates = new ConcurrentHashMap<>();
     
-    // Maksimum hareket hızı (piksel/saniye) - İnsan yürüyüş hızı ~1.4 m/s = ~25 px/s (18 px/m)
-    private static final double MAX_SPEED_PIXELS_PER_SEC = 40.0; // Biraz toleranslı
+    // Maksimum hareket hızı (piksel/saniye) - Hızlı yürüyüş ~2 m/s = ~36 px/s
+    private static final double MAX_SPEED_PIXELS_PER_SEC = 70.0; // Koşma dahil tolerans
     
-    // Smoothing faktörü (0-1 arası, 1'e yakın = daha az smoothing)
-    private static final double SMOOTHING_FACTOR = 0.3; // Yeni konuma %30, eski konuma %70 ağırlık
+    // Smoothing faktörleri (0-1 arası, 1'e yakın = daha az smoothing = daha hızlı tepki)
+    private static final double SMOOTHING_FACTOR_MOVING = 0.6;  // Hareket ederken: hızlı tepki
+    private static final double SMOOTHING_FACTOR_STATIC = 0.3;  // Dururken: stabil konum
+    
+    // Hareket algılama eşiği (bu hızın üstünde = hareket ediyor)
+    private static final double MOVEMENT_SPEED_THRESHOLD = 15.0; // px/s (~0.8 m/s)
     
     // Minimum hareket eşiği (bu kadar piksel değişmezse güncelleme yapma)
-    private static final double MIN_MOVEMENT_THRESHOLD = 5.0;
+    private static final double MIN_MOVEMENT_THRESHOLD = 3.0;
     
     // Varsayılan kullanıcı ID'si (tek kullanıcı senaryosu için)
     private static final String DEFAULT_USER = "default";
@@ -275,6 +279,11 @@ public class PositioningService {
         // Hız hesapla (piksel/saniye)
         double speed = distance / deltaTime;
         
+        // Adaptif smoothing: hareket ederken hızlı tepki, dururken stabil
+        double smoothingFactor = (speed > MOVEMENT_SPEED_THRESHOLD) 
+            ? SMOOTHING_FACTOR_MOVING 
+            : SMOOTHING_FACTOR_STATIC;
+        
         Point smoothedLocation;
         
         // Maksimum hız aşılıyorsa, hareketi sınırla
@@ -286,14 +295,14 @@ public class PositioningService {
             double newX = state.lastLocation.getX() + dx * ratio;
             double newY = state.lastLocation.getY() + dy * ratio;
             
-            // Sonra smoothing uygula
-            smoothedLocation = applyExponentialSmoothing(state.lastLocation, new Point(newX, newY));
+            // Sonra smoothing uygula (hareket halinde = hızlı tepki)
+            smoothedLocation = applyAdaptiveSmoothing(state.lastLocation, new Point(newX, newY), SMOOTHING_FACTOR_MOVING);
             
-            System.out.println("[PositioningService] Hız sınırı uygulandı: " + 
-                String.format("%.1f px/s -> %.1f px/s", speed, MAX_SPEED_PIXELS_PER_SEC));
+            System.out.println("[PositioningService] Hız sınırı: " + 
+                String.format("%.1f -> %.1f px/s", speed, MAX_SPEED_PIXELS_PER_SEC));
         } else {
-            // Normal smoothing uygula
-            smoothedLocation = applyExponentialSmoothing(state.lastLocation, rawLocation);
+            // Adaptif smoothing uygula
+            smoothedLocation = applyAdaptiveSmoothing(state.lastLocation, rawLocation, smoothingFactor);
         }
         
         // State güncelle
@@ -311,12 +320,13 @@ public class PositioningService {
     }
     
     /**
-     * Exponential Moving Average (EMA) ile smoothing
+     * Adaptif Exponential Moving Average (EMA) ile smoothing
      * newLocation = alpha * rawLocation + (1 - alpha) * lastLocation
+     * @param smoothingFactor Yüksek değer = hızlı tepki, düşük değer = stabil
      */
-    private Point applyExponentialSmoothing(Point lastLocation, Point rawLocation) {
-        double smoothedX = SMOOTHING_FACTOR * rawLocation.getX() + (1 - SMOOTHING_FACTOR) * lastLocation.getX();
-        double smoothedY = SMOOTHING_FACTOR * rawLocation.getY() + (1 - SMOOTHING_FACTOR) * lastLocation.getY();
+    private Point applyAdaptiveSmoothing(Point lastLocation, Point rawLocation, double smoothingFactor) {
+        double smoothedX = smoothingFactor * rawLocation.getX() + (1 - smoothingFactor) * lastLocation.getX();
+        double smoothedY = smoothingFactor * rawLocation.getY() + (1 - smoothingFactor) * lastLocation.getY();
         return new Point(smoothedX, smoothedY);
     }
 
